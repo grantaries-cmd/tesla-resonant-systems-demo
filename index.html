@@ -1,0 +1,2549 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Self-contained single-file build. All CSS and JavaScript are inlined.
+     Open this file directly in a modern browser (double-click or file://).
+     No server, network, or external fonts/scripts are required. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unified Tesla Resonant Systems Architecture — Interactive Model Demonstration (v2.0)</title>
+<meta name="author" content="Aries Lamont Grant, Visionaries Analytics Group">
+<style>
+/* inlined from css/styles.css */
+:root {
+  --bg: #0c1114;
+  --panel: #12191d;
+  --panel-2: #161f24;
+  --line: #233038;
+  --line-2: #2d3c45;
+  --text: #e2e8eb;
+  --muted: #9aa8b1;
+  --faint: #6b7b85;
+  --input: #e2a84b;
+  --stored: #64b9cd;
+  --loss: #e07c62;
+  --load: #8dc285;
+  --resid: #b9c3ca;
+  --accent: #64b9cd;
+  --sans: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
+  --radius: 6px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+b { font-weight: 600; }
+sub { font-size: .72em; }
+
+/* ---------- masthead */
+.masthead { display: grid; grid-template-columns: 1fr auto; gap: 10px 24px; padding: 18px 28px 14px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #10171b 0%, var(--bg) 100%); }
+.brand { display: flex; gap: 14px; align-items: center; }
+.mark { width: 38px; height: 38px; color: var(--stored); flex: none; }
+h1 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: .1px; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.credit { text-align: right; font-size: 12.5px; line-height: 1.4; }
+.credit-name { font-weight: 600; }
+.credit-org, .credit-ver { color: var(--muted); }
+.framework { grid-column: 1 / -1; margin: 2px 0 0; display: flex; gap: 14px; align-items: baseline; color: var(--muted); font-size: 12.5px; }
+.tuple { font-family: var(--mono); color: var(--text); background: var(--panel-2); border: 1px solid var(--line); padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+
+/* ---------- notice */
+.sticky-top { position: sticky; top: 0; z-index: 20; }
+.notice { display: flex; gap: 14px; align-items: baseline; padding: 8px 28px; background: #1d1a12; border-bottom: 1px solid #4a3d20; color: #e9dcc0; font-size: 12.5px; }
+.notice strong { color: var(--input); text-transform: uppercase; letter-spacing: 1.2px; font-size: 11px; white-space: nowrap; }
+
+/* ---------- tabs */
+.tabbar { display: flex; justify-content: space-between; align-items: center; padding: 0 28px; background: rgba(12, 17, 20, .96); border-bottom: 1px solid var(--line); backdrop-filter: blur(4px); }
+.tabs { display: flex; gap: 2px; }
+.tab { background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px; padding: 12px 14px 11px; border-bottom: 2px solid transparent; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+.tab-num { font-family: var(--mono); font-size: 10.5px; color: var(--faint); border: 1px solid var(--line-2); border-radius: 3px; padding: 0 4px; }
+.tab:focus-visible, .btn:focus-visible, .seg button:focus-visible, .link-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.transport { display: flex; gap: 10px; align-items: center; }
+.run-state { display: flex; gap: 7px; align-items: center; color: var(--muted); font-size: 12px; margin-right: 4px; }
+.run-state i { width: 7px; height: 7px; border-radius: 50%; background: var(--load); box-shadow: 0 0 0 3px rgba(141, 194, 133, .15); }
+.run-state.paused i { background: var(--input); box-shadow: 0 0 0 3px rgba(226, 168, 75, .15); }
+
+/* ---------- buttons */
+.btn { font: inherit; font-size: 12.5px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 5px; padding: 6px 13px; cursor: pointer; }
+.btn:hover { border-color: #3e515c; background: #1b262c; }
+.btn.ghost { background: transparent; }
+.btn.primary { background: #173843; border-color: #2b6274; color: #e6f5f9; }
+.btn.primary:hover { background: #1c4452; }
+.btn.small { padding: 4px 10px; font-size: 12px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.link-btn { background: none; border: 0; color: var(--stored); font: inherit; font-size: 12.5px; padding: 0; cursor: pointer; align-self: flex-start; }
+.link-btn:hover { text-decoration: underline; }
+
+/* ---------- layout */
+main { padding: 18px 28px 8px; }
+.view { display: none; }
+.view.active { display: block; animation: fade .18s ease-out; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+.card-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.card-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.card-head h3 { margin: 0; font-size: 13px; font-weight: 600; }
+.card-head .tag { margin-left: auto; color: var(--faint); font-size: 11.5px; }
+.vol { color: var(--faint); font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.3px; }
+.fine { color: var(--faint); font-size: 11.5px; margin: 10px 0 0; line-height: 1.5; }
+.caption { color: var(--faint); font-size: 11.5px; margin: 8px 0 0; }
+.mono { font-family: var(--mono); }
+
+.canvas-wrap { position: relative; width: 100%; }
+.canvas-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.ov-canvas { height: 210px; border-radius: 4px; background: #0e1417; border: 1px solid #1b252b; }
+.stage { height: 360px; border-radius: 4px; background: #0e1417; border: 1px solid #1b252b; }
+.chart { height: 196px; }
+
+/* overview */
+.ov-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.ov-card { display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: border-color .15s; }
+.ov-card:hover { border-color: var(--line-2); }
+.ov-card .card-head { margin-bottom: 0; }
+.ov-card .card-head .tag { flex-basis: 100%; margin-left: 0; }
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin: 0; }
+.metrics div { border-top: 1px solid var(--line); padding-top: 6px; }
+.metrics dt { color: var(--faint); font-size: 11px; }
+.metrics dd { margin: 1px 0 0; font-family: var(--mono); font-size: 13.5px; }
+.metrics dd small { color: var(--faint); font-size: 11px; }
+.ov-lower { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; margin-top: 14px; }
+.grct { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.grct th, .grct td { text-align: left; vertical-align: top; padding: 8px 10px; border-top: 1px solid var(--line); }
+.grct thead th { border-top: 0; color: var(--muted); font-weight: 500; font-size: 11.5px; }
+.grct thead th b { font-family: var(--mono); color: var(--stored); margin-right: 4px; }
+.grct tbody th { color: var(--text); font-weight: 600; white-space: nowrap; }
+.grct td { color: #c6d0d5; }
+.convention { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; font-size: 12.5px; color: #c6d0d5; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: -1px; }
+.sw.in { background: var(--input); } .sw.st { background: var(--stored); } .sw.ls { background: var(--loss); } .sw.ld { background: var(--load); } .sw.rs { background: var(--resid); }
+
+/* domain views */
+.domain-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 14px; align-items: start; }
+.stage-col { display: grid; gap: 14px; }
+.side-col { display: grid; gap: 14px; }
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* controls */
+.field { margin-bottom: 14px; }
+.field:last-of-type { margin-bottom: 4px; }
+.field > label { display: flex; justify-content: space-between; align-items: baseline; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+.field > label output { font-family: var(--mono); color: var(--text); font-size: 12.5px; }
+.hint { color: var(--faint); font-size: 11px; }
+.field.row { display: flex; align-items: center; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 18px; background: transparent; margin: 0; }
+input[type=range]::-webkit-slider-runnable-track { height: 3px; background: var(--line-2); border-radius: 2px; }
+input[type=range]::-moz-range-track { height: 3px; background: var(--line-2); border-radius: 2px; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -5.5px; border-radius: 50%; background: var(--text); border: 3px solid #1d3a44; box-shadow: 0 0 0 1px var(--stored); }
+input[type=range]::-moz-range-thumb { width: 10px; height: 10px; border-radius: 50%; background: var(--text); border: 3px solid #1d3a44; box-shadow: 0 0 0 1px var(--stored); }
+input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.range-ticks { position: relative; padding-bottom: 14px; }
+.ticks { position: absolute; left: 7px; right: 7px; top: 16px; height: 14px; pointer-events: none; }
+.ticks span { position: absolute; transform: translateX(-50%); font-family: var(--sans); font-size: 10px; color: var(--stored); white-space: nowrap; }
+.ticks span::before { content: ""; position: absolute; left: 50%; top: -6px; width: 1px; height: 5px; background: var(--stored); }
+.seg { display: flex; border: 1px solid var(--line-2); border-radius: 5px; overflow: hidden; }
+.seg button { flex: 1; font: inherit; font-size: 12px; background: transparent; color: var(--muted); border: 0; border-left: 1px solid var(--line-2); padding: 6px 4px; cursor: pointer; }
+.seg button:first-child { border-left: 0; }
+.seg button:hover { color: var(--text); background: #182227; }
+.seg button.on { background: #19343d; color: #e6f5f9; }
+.seg.wrap { flex-wrap: wrap; border: 0; gap: 4px; overflow: visible; }
+.seg.wrap button { flex: 1 0 30%; border: 1px solid var(--line-2); border-radius: 4px; }
+.switch { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch span { flex: none; width: 30px; height: 17px; border-radius: 9px; background: var(--line-2); position: relative; transition: background .15s; }
+.switch span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: var(--muted); transition: transform .15s, background .15s; }
+.switch input:checked + span { background: #22525f; }
+.switch input:checked + span::after { transform: translateX(13px); background: var(--text); }
+.switch input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* readouts */
+.readout { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0; font-size: 12.5px; }
+.readout dt { color: var(--muted); }
+.readout dd { margin: 0; text-align: right; font-family: var(--mono); }
+.readout dd small { color: var(--faint); }
+.readout .sep { grid-column: 1 / -1; border-top: 1px solid var(--line); margin: 3px 0; }
+
+/* ledger */
+.ledger { font-size: 12.5px; }
+.lrow { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: baseline; padding: 4px 0; }
+.lrow .lbl small { display: block; color: var(--faint); font-size: 10.5px; font-family: var(--mono); }
+.lrow .val { font-family: var(--mono); text-align: right; }
+.lrow.ref { color: var(--muted); }
+.lrow.ref .val { color: var(--muted); }
+.lbar { display: flex; height: 8px; border-radius: 2px; overflow: hidden; background: #0e1417; margin: 8px 0 6px; border: 1px solid var(--line); }
+.lbar i { display: block; height: 100%; transition: width .2s linear; }
+.lfoot { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 8px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font-size: 12px; }
+.lfoot dt { color: var(--muted); }
+.lfoot dd { margin: 0; text-align: right; font-family: var(--mono); }
+.badge { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px; border-radius: 3px; border: 1px solid; }
+.badge.ok { color: var(--load); border-color: #3d5a3a; background: #142017; }
+.badge.bad { color: var(--loss); border-color: #6a3a2e; background: #24150f; }
+.badge.na { color: var(--faint); border-color: var(--line-2); }
+
+/* verification */
+.verify-top { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; margin-bottom: 14px; }
+.verify-intro p { color: #c6d0d5; font-size: 13px; margin: 0 0 8px; max-width: 78ch; }
+.verify-actions { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+.progress { flex: 0 0 180px; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.progress div { height: 100%; width: 0; background: var(--stored); transition: width .1s; }
+.verify-status { font-size: 12.5px; color: var(--muted); }
+.verify-status b.pass { color: var(--load); } .verify-status b.fail { color: var(--loss); }
+.gates { width: 100%; border-collapse: collapse; font-size: 12px; }
+.gates td { padding: 5px 0; border-top: 1px solid var(--line); color: #c6d0d5; }
+.gates tr:first-child td { border-top: 0; }
+.gates td.mono { text-align: right; color: var(--text); white-space: nowrap; padding-left: 12px; }
+.pyref { margin-top: 10px; font-size: 11.5px; color: var(--faint); }
+.verify-tables { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
+.vt { width: 100%; border-collapse: collapse; font-size: 12px; }
+.vt th, .vt td { padding: 6px 10px; border-top: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.vt th:first-child, .vt td:first-child { text-align: left; }
+.vt thead th { border-top: 0; color: var(--muted); font-weight: 500; font-size: 11px; }
+.vt td { font-family: var(--mono); }
+.vt td:first-child { font-family: var(--sans); }
+.vt-wrap { overflow-x: auto; }
+.code { margin: 0; font-family: var(--mono); font-size: 12.5px; background: #0e1417; border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; color: #cfe3ea; overflow-x: auto; }
+
+.foot { display: flex; flex-direction: column; gap: 3px; padding: 14px 28px 22px; color: var(--faint); font-size: 11.5px; border-top: 1px solid var(--line); margin-top: 14px; }
+
+/* responsive */
+@media (max-width: 1180px) {
+  .domain-grid { grid-template-columns: minmax(0, 1fr) 300px; }
+  .stage { height: 320px; }
+}
+@media (max-width: 980px) {
+  .ov-grid { grid-template-columns: 1fr; }
+  .ov-lower, .verify-top { grid-template-columns: 1fr; }
+  .domain-grid { grid-template-columns: 1fr; }
+  .chart-row { grid-template-columns: 1fr; }
+  .masthead { grid-template-columns: 1fr; }
+  .credit { text-align: left; }
+  .tabbar { flex-wrap: wrap; }
+  .sticky-top { position: static; }
+}
+@media (prefers-reduced-motion: reduce) { .view.active { animation: none; } }
+
+.notes { margin: 0; padding-left: 16px; display: grid; gap: 6px; font-size: 12px; color: #c0cad0; line-height: 1.45; }
+.notes li::marker { color: var(--faint); }
+.btn { white-space: nowrap; }
+
+/* ---------- visual-mode control and Unified Principle layer */
+.look { display: flex; align-items: center; gap: 8px; margin-right: 8px; }
+.look-label { color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; }
+.mode-seg button { padding: 5px 10px; flex: none; }
+.mode-caption { padding: 6px 28px; font-size: 12px; color: var(--muted); background: var(--panel); border-bottom: 1px solid var(--line); }
+.mode-caption[hidden] { display: none; }
+.up-card { margin-top: 14px; }
+.up-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 22px; }
+.up-sub { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+.up-canvas { height: 150px; }
+.engine-stage { height: 500px; border-radius: 4px; background: radial-gradient(ellipse at 50% 40%, #111a1f 0%, #0b1013 72%); border: 1px solid #1b252b; cursor: grab; touch-action: none; }
+.engine-stage:active { cursor: grabbing; }
+.field-bars { height: 170px; }
+.wlist { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px 10px; margin-top: 8px; font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+.wlist b { color: var(--faint); font-weight: 400; margin-right: 5px; display: inline-block; min-width: 26px; }
+.readout.five dd { font-size: 11.5px; }
+@media (max-width: 1180px) { .up-grid { grid-template-columns: 1fr 1fr; } .mode-seg button { padding: 5px 7px; } }
+
+/* ---------- mode: infinite reflections (mirror-glass surfaces, reflected marks) */
+body[data-mode="reflections"] .card { background: linear-gradient(180deg, rgba(205, 228, 236, .04) 0%, rgba(205, 228, 236, 0) 36%), var(--panel); border-color: #2a3a43; box-shadow: inset 0 1px 0 rgba(220, 240, 248, .06); }
+body[data-mode="reflections"] .stage, body[data-mode="reflections"] .ov-canvas { background: radial-gradient(ellipse at 50% 50%, #0b1114 0%, #121b20 100%); }
+body[data-mode="reflections"] .mark, body[data-mode="reflections"] .tuple { -webkit-box-reflect: below 1px linear-gradient(transparent 35%, rgba(255, 255, 255, .28)); }
+body[data-mode="reflections"] .tab[aria-selected="true"] { box-shadow: inset 0 -2px 0 var(--accent), 0 2px 0 rgba(100, 185, 205, .25); }
+
+/* ---------- mode: absence of pic pixels (void, hairlines, procedural dot lattice) */
+body[data-mode="absence"] { --bg: #040506; --panel: rgba(4, 5, 6, .72); --panel-2: transparent; --line: #182126; --line-2: #2a363d; --text: #e6edf0; --muted: #a3b1b9; --faint: #6c7b84;
+  --input: #e8b45a; --stored: #7fd0e0; --loss: #e8876d; --load: #9bd08f; --resid: #c9d2d8; --accent: #7fd0e0;
+  background-color: #040506; background-image: radial-gradient(circle, rgba(127, 208, 224, .11) 1px, transparent 1.3px); background-size: 26px 26px; }
+html:has(body[data-mode="absence"]) { background: #040506; }
+body[data-mode="absence"] .masthead { background: transparent; }
+body[data-mode="absence"] .notice { background: rgba(232, 180, 90, .05); border-bottom-color: rgba(232, 180, 90, .3); }
+body[data-mode="absence"] .tabbar, body[data-mode="absence"] .mode-caption { background: rgba(4, 5, 6, .92); }
+body[data-mode="absence"] .card { position: relative; border-color: #1a2328; border-radius: 0; }
+body[data-mode="absence"] .card::before, body[data-mode="absence"] .card::after { content: ""; position: absolute; width: 9px; height: 9px; border-color: rgba(127, 208, 224, .55); border-style: solid; pointer-events: none; }
+body[data-mode="absence"] .card::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+body[data-mode="absence"] .card::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+body[data-mode="absence"] .card-head h2, body[data-mode="absence"] .card-head h3 { text-transform: uppercase; letter-spacing: 1.4px; font-weight: 500; font-size: 12px; }
+body[data-mode="absence"] .stage, body[data-mode="absence"] .ov-canvas, body[data-mode="absence"] .engine-stage { background: transparent; border: 1px dashed #1f2a30; border-radius: 0; }
+body[data-mode="absence"] .btn, body[data-mode="absence"] .seg button.on { background: transparent; }
+body[data-mode="absence"] .seg button.on { color: var(--stored); box-shadow: inset 0 -1px 0 var(--stored); }
+body[data-mode="absence"] .code { background: transparent; }
+
+/* ---------- mode: inverted — inside-out bevels (colour negation rules are generated below) */
+body[data-mode="inverted"] .card { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .04), inset 0 2px 6px rgba(0, 0, 0, .05); }
+.tab { white-space: nowrap; padding: 12px 10px 11px; }
+@media (max-width: 1360px) { .run-state span { display: none; } .look-label { display: none; } }
+
+/* inlined from css/mode-inverted.css */
+
+/* ---------- mode: inverted — exact colour negation of every base rule (generated by tools/gen_inverted_css.py) */
+body[data-mode="inverted"] { --bg: #f3eeeb; --panel: #ede6e2; --panel-2: #e9e0db; --line: #dccfc7; --line-2: #d2c3ba; --text: #1d1714; --muted: #65574e; --faint: #94847a; --input: #1d57b4; --stored: #9b4632; --loss: #1f839d; --load: #723d7a; --resid: #463c35; --accent: #9b4632; }
+body[data-mode="inverted"] .masthead { background: linear-gradient(180deg, #efe8e4 0%, var(--bg) 100%); }
+body[data-mode="inverted"] .notice { background: #e2e5ed; border-bottom: 1px solid #b5c2df; color: #16233f; }
+body[data-mode="inverted"] .tabbar { background: rgba(243, 238, 235, .96); }
+body[data-mode="inverted"] .run-state i { box-shadow: 0 0 0 3px rgba(114, 61, 122, .15); }
+body[data-mode="inverted"] .run-state.paused i { box-shadow: 0 0 0 3px rgba(29, 87, 180, .15); }
+body[data-mode="inverted"] .btn:hover { border-color: #c1aea3; background: #e4d9d3; }
+body[data-mode="inverted"] .btn.primary { background: #e8c7bc; border-color: #d49d8b; color: #190a06; }
+body[data-mode="inverted"] .btn.primary:hover { background: #e3bbad; }
+body[data-mode="inverted"] .ov-canvas { background: #f1ebe8; border: 1px solid #e4dad4; }
+body[data-mode="inverted"] .stage { background: #f1ebe8; border: 1px solid #e4dad4; }
+body[data-mode="inverted"] .grct td { color: #392f2a; }
+body[data-mode="inverted"] .convention { color: #392f2a; }
+body[data-mode="inverted"] input[type=range]::-webkit-slider-thumb { border: 3px solid #e2c5bb; }
+body[data-mode="inverted"] input[type=range]::-moz-range-thumb { border: 3px solid #e2c5bb; }
+body[data-mode="inverted"] .seg button:hover { background: #e7ddd8; }
+body[data-mode="inverted"] .seg button.on { background: #e6cbc2; color: #190a06; }
+body[data-mode="inverted"] .switch input:checked + span { background: #ddada0; }
+body[data-mode="inverted"] .lbar { background: #f1ebe8; }
+body[data-mode="inverted"] .badge.ok { border-color: #c2a5c5; background: #ebdfe8; }
+body[data-mode="inverted"] .badge.bad { border-color: #95c5d1; background: #dbeaf0; }
+body[data-mode="inverted"] .verify-intro p { color: #392f2a; }
+body[data-mode="inverted"] .gates td { color: #392f2a; }
+body[data-mode="inverted"] .code { background: #f1ebe8; color: #301c15; }
+body[data-mode="inverted"] .notes { color: #3f352f; }
+body[data-mode="inverted"] .engine-stage { background: radial-gradient(ellipse at 50% 40%, #eee5e0 0%, #f4efec 72%); border: 1px solid #e4dad4; }
+html:has(body[data-mode="inverted"]) { background: #f3eeeb; }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".45"/>
+      <circle cx="20" cy="20" r="11" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/>
+      <circle cx="20" cy="20" r="5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <line x1="3" y1="20" x2="37" y2="20" stroke="currentColor" stroke-width=".8" opacity=".35"/>
+    </svg>
+    <div>
+      <h1>Unified Tesla Resonant Systems Architecture</h1>
+      <p class="sub">Interactive model demonstration · Electromagnetic, mechanical and fluid energy transfer</p>
+    </div>
+  </div>
+  <div class="credit">
+    <div class="credit-name">Aries Lamont Grant</div>
+    <div class="credit-org">Visionaries Analytics Group</div>
+    <div class="credit-ver">Version 2.0 — 6 November 2026</div>
+  </div>
+  <p class="framework">
+    <span class="tuple">𝒜 = (G, R, C, T)</span>
+    <span>Geometry · Response · Coupling · Timing. The product Ψ = G·R·C·T is used here as an organizing tuple, not as a dimensional physical law. Each domain keeps its own equations, units and losses.</span>
+  </p>
+</header>
+
+<div class="sticky-top">
+<div class="notice" role="note" aria-label="Model notice">
+  <strong>Model notice</strong>
+  <span>Synthetic educational simulation of declared lumped models — not hardware validation, measured performance, or a construction guide. Coil: low-voltage lumped coupled-RLC comparator (no distributed coil, streamer or spark-gap model). Oscillator: idealized forced damped mass–spring. Rotor: imposed torque curve, not CFD. Input, storage, losses and load are kept separate; every load efficiency is below 1.</span>
+</div>
+
+<nav class="tabbar" role="tablist" aria-label="Views">
+  <div class="tabs">
+    <button role="tab" class="tab" data-view="overview" aria-selected="true">Overview</button>
+    <button role="tab" class="tab" data-view="coil" aria-selected="false"><span class="tab-num">I</span>Coil</button>
+    <button role="tab" class="tab" data-view="osc" aria-selected="false"><span class="tab-num">II</span>Oscillator</button>
+    <button role="tab" class="tab" data-view="rotor" aria-selected="false"><span class="tab-num">III</span>Rotor</button>
+    <button role="tab" class="tab" data-view="verify" aria-selected="false"><span class="tab-num">IV</span>Verification</button>
+    <button role="tab" class="tab" data-view="engine" aria-selected="false"><span class="tab-num">V</span>Engine space</button>
+  </div>
+  <div class="transport">
+    <div class="look">
+      <span class="look-label">Look</span>
+      <div class="seg mode-seg" id="modeSeg" role="radiogroup" aria-label="Visual mode (M cycles)">
+        <button role="radio" data-v="standard" title="Standard dossier view">Standard</button>
+        <button role="radio" data-v="inverted" title="Negative world with circle-inversion lens">Inverted</button>
+        <button role="radio" data-v="reflections" title="Recursive length-preserving mirror reflections">Reflections</button>
+        <button role="radio" data-v="absence" title="No bitmaps: point field, construction lines and void">Absence</button>
+      </div>
+    </div>
+    <span class="run-state" id="runState"><i></i><span>Running</span></span>
+    <button class="btn" id="btnPause" title="Pause / resume all simulations (Space)">Pause</button>
+    <button class="btn ghost" id="btnReset" title="Reset all simulations to rest">Reset all</button>
+  </div>
+</nav>
+<div class="mode-caption" id="modeCaption" hidden></div>
+</div>
+
+<main>
+<!-- ============================================================ OVERVIEW -->
+<section class="view active" id="view-overview" role="tabpanel">
+  <div class="ov-grid">
+    <article class="card ov-card" data-goto="coil">
+      <header class="card-head"><span class="vol">Volume I</span><h2>Tesla coil</h2><span class="tag">coupled RLC · lumped, low-voltage</span></header>
+      <div class="canvas-wrap ov-canvas"><canvas id="ovCoil"></canvas></div>
+      <dl class="metrics" id="ovCoilMetrics"></dl>
+      <button class="link-btn" data-goto="coil">Open full view →</button>
+    </article>
+    <article class="card ov-card" data-goto="osc">
+      <header class="card-head"><span class="vol">Volume II</span><h2>Mechanical oscillator</h2><span class="tag">forced damped mass–spring</span></header>
+      <div class="canvas-wrap ov-canvas"><canvas id="ovOsc"></canvas></div>
+      <dl class="metrics" id="ovOscMetrics"></dl>
+      <button class="link-btn" data-goto="osc">Open full view →</button>
+    </article>
+    <article class="card ov-card" data-goto="rotor">
+      <header class="card-head"><span class="vol">Volume III</span><h2>Bladeless fluid rotor</h2><span class="tag">imposed torque curve · not CFD</span></header>
+      <div class="canvas-wrap ov-canvas"><canvas id="ovRotor"></canvas></div>
+      <dl class="metrics" id="ovRotorMetrics"></dl>
+      <button class="link-btn" data-goto="rotor">Open full view →</button>
+    </article>
+  </div>
+
+  <div class="ov-lower">
+    <article class="card">
+      <header class="card-head"><h2>G · R · C · T mapping</h2><span class="tag">organizational framework</span></header>
+      <table class="grct">
+        <thead><tr><th></th><th><b>G</b> Geometry / boundaries</th><th><b>R</b> Response</th><th><b>C</b> Coupling / load</th><th><b>T</b> Timing / excitation</th></tr></thead>
+        <tbody>
+          <tr><th>Tesla coil</th><td>Winding and top-load geometry set L₁, L₂, C₁, C₂ and κ</td><td>LC response; two coupled normal modes ω₋, ω₊</td><td>Mutual inductance M = κ√(L₁L₂); copper and load resistance</td><td>Drive phase and frequency of the 1 V sinusoid</td></tr>
+          <tr><th>Oscillator</th><td>Spring geometry and mass set k<sub>s</sub>, m</td><td>Inertial resonance ω₀ = √(k<sub>s</sub>/m)</td><td>Damping c<sub>m</sub> and force coupling</td><td>Drive timing; displacement lags force by π/2 at ω₀</td></tr>
+          <tr><th>Fluid rotor</th><td>Disc stack, gaps and rim/centre ports</td><td>Speed response Ω(t) — a first-order spin-up, not an oscillatory mode</td><td>Viscous shear torque (imposed curve); bearing and load torque</td><td>Admission (available flow power) and load timing</td></tr>
+        </tbody>
+      </table>
+      <p class="fine">The rotor is not treated as a resonator: no oscillatory mode is modelled for it. Similar vocabulary does not make the electrical, mechanical and fluid equations identical.</p>
+    </article>
+    <article class="card">
+      <header class="card-head"><h2>Energy accounting convention</h2></header>
+      <ul class="convention">
+        <li><i class="sw in"></i><b>Input</b> — work delivered by the declared source (drive voltage, applied force, or fluid torque on the rotor).</li>
+        <li><i class="sw st"></i><b>Stored</b> — field, elastic/kinetic, or rotor kinetic energy currently in the model.</li>
+        <li><i class="sw ls"></i><b>Loss</b> — copper heat, viscous damping, or bearing loss.</li>
+        <li><i class="sw ld"></i><b>Load</b> — energy delivered to the declared load.</li>
+        <li><i class="sw rs"></i><b>Residual</b> — ΔU − W<sub>in</sub> + W<sub>loss</sub> + W<sub>load</sub>: numerical integration error only.</li>
+      </ul>
+      <p class="fine">Evidence labels used in the dossier: [D] executed synthetic computation · [M] mathematical interpretation · [E] external measurement · [P] proposal. Everything in this app is [D] or [M]; no [E] device or efficiency result exists.</p>
+    </article>
+  </div>
+
+  <article class="card up-card">
+    <header class="card-head"><h2>Unified Principle computation layer</h2><span class="tag">framework references · display and diagnostics only</span></header>
+    <div class="up-grid">
+      <div>
+        <div class="up-sub">17-mode transformation field</div>
+        <div class="canvas-wrap up-canvas"><canvas id="ovField"></canvas></div>
+      </div>
+      <div>
+        <div class="up-sub">Drift D(t) = |Xₜ − Xₜ₋₁| / (Λ_G + ε)</div>
+        <dl class="readout" id="ovDrift"></dl>
+        <p class="fine">A normalized change measure on each domain's dimensionless state, sampled once per drive period (rotor every 0.25 s). It falls toward zero as a driven response settles. It is not proof of physical stability, and a valid moving trajectory can have D &gt; 0.</p>
+      </div>
+      <div>
+        <div class="up-sub">Reference floor</div>
+        <dl class="readout"><dt>L₀ · t₀</dt><dd>0 · 0</dd><dt>N (state lattice)</dt><dd>56</dd><dt>Λ_G (anchor)</dt><dd>6.8169…</dd><dt>Σ wⱼ · ‖w‖₂</dt><dd id="ovWstats"></dd></dl>
+        <p class="fine">These are framework definitions from <i>The Unified Principle</i> (A. L. Grant), used here for state organization and drift monitoring. They do not mean weightlessness, removed gravity or a new physical constant, and they do not enter the Tesla-domain equations.</p>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- ============================================================ COIL -->
+<section class="view" id="view-coil" role="tabpanel">
+  <div class="domain-grid">
+    <div class="stage-col">
+      <article class="card stage-card">
+        <header class="card-head"><span class="vol">Volume I</span><h2>Two coupled RLC circuits</h2><span class="tag" id="coilTimeTag">t = 0</span></header>
+        <div class="canvas-wrap stage"><canvas id="coilStage"></canvas></div>
+        <p class="caption">L𝑞̈ + R𝑞̇ + K𝑞 = u(t), with L = [[L₁, M], [M, L₂]], K = diag(1/C₁, 1/C₂). Charge shading, current markers and flux lines are drawn from the live RK4 state. Playback is slowed by roughly four orders of magnitude so a 5 kHz drive is visible.</p>
+      </article>
+      <div class="chart-row">
+        <article class="card"><header class="card-head"><h3>Live traces</h3><span class="tag">each trace normalised to its own peak</span></header><div class="canvas-wrap chart"><canvas id="coilScope"></canvas></div></article>
+        <article class="card"><header class="card-head"><h3>Steady-state response vs drive</h3><span class="tag">analytic phasor solution, same model</span></header><div class="canvas-wrap chart"><canvas id="coilResp"></canvas></div></article>
+      </div>
+      <div class="chart-row">
+        <article class="card">
+        <header class="card-head"><h3>Normal modes</h3><span class="tag">undamped, declared model</span></header>
+        <dl class="readout" id="coilModes"></dl>
+      </article>
+        <article class="card"><header class="card-head"><h3>Reading this model</h3><span class="tag">dossier v2.0</span></header><ul class="notes"><li>Strong coupling splits the response into ω₋ and ω₊. Driving at the isolated frequency ω₀ is not automatically optimal for load power.</li><li>Resonance cancels a reactance at one frequency; it does not remove resistance. Copper loss I²R stays in the ledger.</li><li>A finite-window output/input ratio includes the change in stored energy. Compare period-averaged powers near steady state.</li><li>κ → 1 makes the ideal inductance matrix singular, not a route to unlimited gain; the slider stops at 0.90.</li><li>Lumped comparator only: no distributed winding, corona, streamers, spark gap, or terminal-voltage prediction.</li></ul></article>
+      </div>
+    </div>
+    <aside class="side-col">
+      <article class="card">
+        <header class="card-head"><h3>Controls</h3></header>
+        <div class="field">
+          <label>Official scenarios <span class="hint">start from rest</span></label>
+          <div class="seg wrap" id="coilPresets">
+            <button data-p="uncoupled">Uncoupled</button><button data-p="matched_k02">κ 0.2</button><button data-p="matched_k05">κ 0.5</button>
+            <button data-p="lower_split_drive">Lower split</button><button data-p="detuned_secondary">Detuned C₂</button><button data-p="lossless_ringdown">Lossless ringdown</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="coilKappa">Coupling κ <output id="coilKappaOut"></output></label>
+          <input type="range" id="coilKappa" min="0" max="0.9" step="0.01" value="0.2">
+        </div>
+        <div class="field">
+          <label for="coilRatio">Drive ratio ω/ω₀ <output id="coilRatioOut"></output></label>
+          <div class="range-ticks"><input type="range" id="coilRatio" min="0.6" max="1.6" step="0.001" value="1"><div class="ticks" id="coilRatioTicks"></div></div>
+        </div>
+        <div class="field">
+          <label for="coilC2">Secondary C₂ <output id="coilC2Out"></output></label>
+          <input type="range" id="coilC2" min="0.15" max="0.40" step="0.0025" value="0.25">
+        </div>
+        <div class="field row">
+          <label class="switch"><input type="checkbox" id="coilLossless"><span></span>Lossless ringdown (R = 0, no drive, q₁(0) = 1 µC)</label>
+        </div>
+        <div class="field">
+          <label>Playback <span class="hint">drive periods per second</span></label>
+          <div class="seg" id="coilRate"><button data-v="0.25">¼</button><button data-v="1">1</button><button data-v="4">4</button><button data-v="16">16</button></div>
+        </div>
+        <p class="fine">Changing a slider keeps the present state and opens a new accounting segment. Scenario buttons restart from rest, as in the official checks.</p>
+      </article>
+      <article class="card">
+        <header class="card-head"><h3>Energy accounting</h3><span class="tag" id="coilSegTag">segment</span></header>
+        <div class="ledger" id="coilLedger"></div>
+      </article>
+    </aside>
+  </div>
+</section>
+
+<!-- ============================================================ OSCILLATOR -->
+<section class="view" id="view-osc" role="tabpanel">
+  <div class="domain-grid">
+    <div class="stage-col">
+      <article class="card stage-card">
+        <header class="card-head"><span class="vol">Volume II</span><h2>Forced damped mass–spring</h2><span class="tag" id="oscTimeTag">t = 0</span></header>
+        <div class="canvas-wrap stage"><canvas id="oscStage"></canvas></div>
+        <p class="caption">m𝑥̈ + c<sub>m</sub>𝑥̇ + k<sub>s</sub>𝑥 = F₀ cos ωt. Dashed brackets mark the analytic steady amplitude X(ω). Displacement is drawn at true scale against the millimetre ruler. Idealized model, not a historical oscillator reconstruction.</p>
+      </article>
+      <div class="chart-row">
+        <article class="card"><header class="card-head"><h3>Force and displacement</h3><span class="tag">normalised traces, last 3 periods</span></header><div class="canvas-wrap chart"><canvas id="oscScope"></canvas></div></article>
+        <article class="card"><header class="card-head"><h3>Amplitude and lag vs drive</h3><span class="tag">analytic curve · measured point</span></header><div class="canvas-wrap chart"><canvas id="oscResp"></canvas></div></article>
+      </div>
+      <div class="chart-row">
+        <article class="card">
+        <header class="card-head"><h3>Live vs analytic</h3><span class="tag">last full drive period</span></header>
+        <dl class="readout" id="oscRead"></dl>
+      </article>
+        <article class="card"><header class="card-head"><h3>Reading this model</h3><span class="tag">dossier v2.0</span></header><ul class="notes"><li>At ω = ω₀ displacement lags force by π/2 while force and velocity are aligned, so a non-zero displacement phase is not a failure.</li><li>The displacement peak sits at ω₀√(1−2ζ²) ≈ 0.9996 ω₀; velocity and power responses have their own criteria.</li><li>In steady state the average input equals damping dissipation. Energy does not accumulate indefinitely.</li><li>An undamped oscillator driven at its mode grows without bound in the linear model; that is not stable, usable operation.</li></ul></article>
+      </div>
+    </div>
+    <aside class="side-col">
+      <article class="card">
+        <header class="card-head"><h3>Controls</h3></header>
+        <div class="field">
+          <label>Official ratios <span class="hint">start from rest</span></label>
+          <div class="seg" id="oscPresets"><button data-v="0.5">0.5</button><button data-v="0.9">0.9</button><button data-v="1">1.0</button><button data-v="1.1">1.1</button><button data-v="1.5">1.5</button></div>
+        </div>
+        <div class="field">
+          <label for="oscRatio">Drive ratio ω/ω₀ <output id="oscRatioOut"></output></label>
+          <input type="range" id="oscRatio" min="0.5" max="1.5" step="0.005" value="1">
+        </div>
+        <div class="field">
+          <label>Playback <span class="hint">× real time</span></label>
+          <div class="seg" id="oscRate"><button data-v="1">×1</button><button data-v="2">×2</button><button data-v="5">×5</button><button data-v="10">×10</button></div>
+        </div>
+        <p class="fine">m = 1 kg · k<sub>s</sub> = 100 N/m · c<sub>m</sub> = 0.4 N·s/m · F₀ = 0.1 N. Transients decay with τ = 2m/c<sub>m</sub> = 5 s, so the live amplitude approaches the analytic value after several τ.</p>
+      </article>
+      <article class="card">
+        <header class="card-head"><h3>Energy accounting</h3><span class="tag" id="oscSegTag">segment</span></header>
+        <div class="ledger" id="oscLedger"></div>
+      </article>
+    </aside>
+  </div>
+</section>
+
+<!-- ============================================================ ROTOR -->
+<section class="view" id="view-rotor" role="tabpanel">
+  <div class="domain-grid">
+    <div class="stage-col">
+      <article class="card stage-card">
+        <header class="card-head"><span class="vol">Volume III</span><h2>Bladeless disc rotor</h2><span class="tag" id="rotorTimeTag">t = 0</span></header>
+        <div class="canvas-wrap stage"><canvas id="rotorStage"></canvas></div>
+        <p class="caption">J<sub>r</sub>Ω̇ = τ<sub>fluid</sub> − τ<sub>bearing</sub> − τ<sub>load</sub>, with the imposed curve τ<sub>fluid</sub> = τ₀(1 − Ω/Ω<sub>free</sub>), τ₀ = 4η<sub>cap</sub>P<sub>flow</sub>/Ω<sub>free</sub>. Viscous shear transfers momentum from the spiral flow to the discs. Disc rotation is drawn slowed; particle paths are illustrative.</p>
+      </article>
+      <div class="chart-row">
+        <article class="card"><header class="card-head"><h3>Torque and power vs shaft speed</h3><span class="tag">imposed curve, max = η<sub>cap</sub>P<sub>flow</sub> by construction</span></header><div class="canvas-wrap chart"><canvas id="rotorCurve"></canvas></div></article>
+        <article class="card"><header class="card-head"><h3>Spin-up history</h3><span class="tag">shaft speed and load power</span></header><div class="canvas-wrap chart"><canvas id="rotorHist"></canvas></div></article>
+      </div>
+      <div class="chart-row">
+        <article class="card">
+        <header class="card-head"><h3>Shaft state</h3></header>
+        <dl class="readout" id="rotorRead"></dl>
+      </article>
+        <article class="card"><header class="card-head"><h3>Reading this model</h3><span class="tag">dossier v2.0</span></header><ul class="notes"><li>The torque curve is imposed. Transferred power τ·Ω peaks at η_cap·P_flow at Ω = Ω_free/2 by construction.</li><li>Viscous shear transfers angular momentum and also dissipates; no-slip coupling is not loss-free adhesion.</li><li>Shaft speed is a first-order spin-up to Ω_ss. No oscillatory mode is modelled, so no resonance is claimed for the rotor.</li><li>Real performance needs fluid equations, gaps, roughness, leakage, bearings and calibrated measurement.</li></ul></article>
+      </div>
+    </div>
+    <aside class="side-col">
+      <article class="card">
+        <header class="card-head"><h3>Controls</h3></header>
+        <div class="field">
+          <label>Available flow power P<sub>flow</sub> <span class="hint">keeps current speed</span></label>
+          <div class="seg" id="rotorPower"><button data-v="50">50 W</button><button data-v="100">100 W</button><button data-v="200">200 W</button><button data-v="500">500 W</button></div>
+        </div>
+        <div class="field">
+          <label>Playback <span class="hint">× real time</span></label>
+          <div class="seg" id="rotorRate"><button data-v="0.5">×½</button><button data-v="1">×1</button><button data-v="2">×2</button><button data-v="4">×4</button></div>
+        </div>
+        <div class="field row">
+          <label class="switch"><input type="checkbox" id="rotorOverlay"><span></span>Educational pressure overlay (display only, not computed)</label>
+        </div>
+        <div class="field row"><button class="btn small" id="rotorRestart">Restart from rest</button></div>
+        <p class="fine">J<sub>r</sub> = 0.1 kg·m² · bearing 0.01 N·m·s · load 0.04 N·m·s · η<sub>cap</sub> = 0.65 · Ω<sub>free</sub> = 100 rad/s. Illustrative lumped control/energy test; must not be used for device sizing.</p>
+      </article>
+      <article class="card">
+        <header class="card-head"><h3>Energy accounting</h3><span class="tag" id="rotorSegTag">segment</span></header>
+        <div class="ledger" id="rotorLedger"></div>
+      </article>
+    </aside>
+  </div>
+</section>
+
+<!-- ============================================================ VERIFICATION -->
+<section class="view" id="view-verify" role="tabpanel">
+  <div class="verify-top">
+    <article class="card verify-intro">
+      <header class="card-head"><span class="vol">Volume IV</span><h2>Official numerical checks</h2><span class="tag">Chapter 14 · Appendix A</span></header>
+      <p>The browser re-runs the declared checks with the same constants and full official step counts: five driven RLC cases and five mechanical ratios at 80 periods × 240 RK4 steps, a lossless ringdown at 20 periods × 300 steps, and four rotor runs of 10 s at Δt = 0.005 s. Results are compared with the Python reference module.</p>
+      <p class="fine">PASS is limited to these numerical checks — implementation versus declared equations. No timestep-convergence study, hardware calibration, model-to-observation comparison or stability theorem is claimed. Model-to-hardware residuals are <b>not tested</b>.</p>
+      <div class="verify-actions">
+        <button class="btn primary" id="btnVerify">Run checks in browser</button>
+        <div class="progress" aria-hidden="true"><div id="verifyBar"></div></div>
+        <span class="verify-status" id="verifyStatus">Not yet run in this session.</span>
+      </div>
+    </article>
+    <article class="card">
+      <header class="card-head"><h3>Acceptance gates</h3></header>
+      <table class="gates">
+        <tbody>
+          <tr><td>Driven RLC and mechanical, max scaled balance error</td><td class="mono">&lt; 2×10⁻⁵</td></tr>
+          <tr><td>Mode relative error, analytic root vs eig(L⁻¹K)</td><td class="mono">&lt; 10⁻¹²</td></tr>
+          <tr><td>Lossless ringdown, max relative energy drift</td><td class="mono">&lt; 2×10⁻⁵</td></tr>
+          <tr><td>Rotor absolute balance error</td><td class="mono">&lt; 10⁻⁵ J</td></tr>
+          <tr><td>Remaining (unconverted) flow energy</td><td class="mono">≥ −10⁻⁸ J</td></tr>
+          <tr><td>Invalid κ = −0.1 and κ = 1 rejected</td><td class="mono">2 of 2</td></tr>
+        </tbody>
+      </table>
+      <div class="pyref" id="pyRefInfo"></div>
+    </article>
+  </div>
+  <div class="verify-tables" id="verifyTables"></div>
+  <article class="card">
+    <header class="card-head"><h3>Exact official results with Python</h3></header>
+<pre class="code">python3 -m pip install numpy        # if NumPy is not installed
+python3 tesla_systems_validation.py --output-dir tesla_results
+# exit code 0 = declared numerical checks PASS; 1 = FAIL
+# writes tesla_results/tesla_validation_report.json and sampled_model_traces.csv</pre>
+  </article>
+</section>
+<!-- ============================================================ ENGINE SPACE -->
+<section class="view" id="view-engine" role="tabpanel">
+  <div class="domain-grid">
+    <div class="stage-col">
+      <article class="card stage-card">
+        <header class="card-head"><span class="vol">Volume V</span><h2>Engine space — the three instruments as systems in one state machine</h2><span class="tag" id="engineTag">live</span></header>
+        <div class="canvas-wrap engine-stage"><canvas id="engineStage"></canvas></div>
+        <p class="caption">A procedural architectural volume, drawn entirely with vector geometry and no bitmaps. The floor lattice holds the N = 56 observable states and the CLOCK sweep. The back wall carries the 17 weighted modes and their field f(L). Each chamber renders its instrument from the live RK4 state. The BOX wireframe marks the admissible domain. Staging only: chamber placement and the 17-mode field carry no physical coupling between domains.</p>
+      </article>
+      <div class="chart-row">
+        <article class="card"><header class="card-head"><h3>Transformation field f(L)</h3><span class="tag">exact supplied wⱼ · display basis Fⱼ = cos 2πjL</span></header><div class="canvas-wrap chart"><canvas id="engineCurve"></canvas></div></article>
+        <article class="card"><header class="card-head"><h3>Drift D(t) per domain</h3><span class="tag">normalized change measure, log scale</span></header><div class="canvas-wrap chart"><canvas id="engineDrift"></canvas></div></article>
+      </div>
+    </div>
+    <aside class="side-col">
+      <article class="card">
+        <header class="card-head"><h3>17-mode weights wⱼ</h3><span class="tag">attachment CSV</span></header>
+        <div class="canvas-wrap field-bars"><canvas id="engineBars"></canvas></div>
+        <div class="wlist" id="wList"></div>
+      </article>
+      <article class="card">
+        <header class="card-head"><h3>Five Principles</h3><span class="tag">compact architecture</span></header>
+        <dl class="readout five" id="fivePrinciples"></dl>
+      </article>
+      <article class="card">
+        <header class="card-head"><h3>Invariant geometry</h3><span class="tag">‖Rv‖₂ = ‖v‖₂ · RᵀR = I</span></header>
+        <dl class="readout" id="invariants"></dl>
+        <p class="fine">Tested every frame on the live state vector v = (i₁/I₁, x/X), for a rotation R(θ) and a Householder reflection. These are the length-preserving transforms behind the reflection mode. Uniform depth scaling there is perspective only.</p>
+      </article>
+    </aside>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <span>Unified Tesla Resonant Systems Architecture · Version 2.0 — 6 November 2026 · Aries Lamont Grant, Visionaries Analytics Group</span>
+  <span>Modern engineering interpretation; not a claim of a new universal law, net energy gain, or a historical statement by Tesla. No high-voltage apparatus is operated or specified.</span>
+</footer>
+
+<script>
+/* inlined from js/physics.js */
+/*
+ * Unified Tesla Resonant Systems Architecture, Version 2.0 — browser physics core.
+ * JavaScript port of the identities in tesla_systems_validation.py (Appendix A).
+ * Same equations, constants, RK4 transition and admissibility rule.
+ * Synthetic model checks only; no hardware, no high-voltage operation.
+ */
+(function (global) {
+  'use strict';
+
+  // ---------------------------------------------------------------- RK4 engine
+  function RK4Engine(identity, dt) {
+    if (!Number.isFinite(dt) || dt <= 0) throw new Error('Invalid interval');
+    this.id = identity; this.dt = +dt; this.t = 0; this.k = 0;
+    this.y = Float64Array.from(identity.initial);
+    if (!identity.admissible(this.y)) throw new Error('Invalid initial state');
+    var n = this.y.length;
+    this.k1 = new Float64Array(n); this.k2 = new Float64Array(n);
+    this.k3 = new Float64Array(n); this.k4 = new Float64Array(n);
+    this.tmp = new Float64Array(n); this.z = new Float64Array(n);
+  }
+  RK4Engine.prototype.step = function () {
+    var h = this.dt, t = this.t, y = this.y, n = y.length, i;
+    var id = this.id, k1 = this.k1, k2 = this.k2, k3 = this.k3, k4 = this.k4, tmp = this.tmp, z = this.z;
+    id.rhs(t, y, k1);
+    for (i = 0; i < n; i++) tmp[i] = y[i] + h * k1[i] / 2;
+    id.rhs(t + h / 2, tmp, k2);
+    for (i = 0; i < n; i++) tmp[i] = y[i] + h * k2[i] / 2;
+    id.rhs(t + h / 2, tmp, k3);
+    for (i = 0; i < n; i++) tmp[i] = y[i] + h * k3[i];
+    id.rhs(t + h, tmp, k4);
+    for (i = 0; i < n; i++) z[i] = y[i] + h * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6;
+    var tn = t + h;
+    if (!id.admissible(z) || !Number.isFinite(tn) || tn <= t)
+      throw new Error('Rejected numerical candidate; no state clipping');
+    this.y.set(z); this.t = tn; this.k += 1;
+    return this.y;
+  };
+
+  function allFinite(y) { for (var i = 0; i < y.length; i++) if (!Number.isFinite(y[i])) return false; return true; }
+
+  // ------------------------------------------------------- Coupled RLC identity
+  // State: [q1, q2, i1, i2, W_in, W_copper, W_load]
+  function RLCIdentity(opts) {
+    opts = opts || {};
+    var coupling = opts.coupling === undefined ? 0.2 : opts.coupling;
+    var C2 = opts.C2 === undefined ? 0.25e-6 : opts.C2;
+    var driveRatio = opts.driveRatio === undefined ? 1 : opts.driveRatio;
+    var lossless = !!opts.lossless;
+    this.L1 = 0.001; this.L2 = 0.004; this.C1 = 1e-6; this.C2 = +C2; this.kappa = +coupling;
+    if (!(0 <= this.kappa && this.kappa < 1) || !(this.C2 > 0)) throw new Error('Invalid passive model');
+    this.M = this.kappa * Math.sqrt(this.L1 * this.L2);
+    var det = this.L1 * this.L2 - this.M * this.M;
+    this.Li00 = this.L2 / det; this.Li01 = -this.M / det; this.Li10 = -this.M / det; this.Li11 = this.L1 / det;
+    this.K1 = 1 / this.C1; this.K2 = 1 / this.C2;
+    this.R1 = lossless ? 0 : 0.5; this.R2 = lossless ? 0 : 0.8;
+    this.Rload = lossless ? 0 : 2;
+    this.lossless = lossless;
+    this.omega0 = 1 / Math.sqrt(this.L1 * this.C1); this.omega = this.omega0 * driveRatio;
+    this.driveRatio = driveRatio;
+    this.amplitude = lossless ? 0 : 1;
+    this.initial = new Float64Array(7);
+    if (lossless) this.initial[0] = 1e-6;
+  }
+  RLCIdentity.prototype.admissible = function (y) { return y.length === 7 && allFinite(y); };
+  RLCIdentity.prototype.energy = function (y) {
+    return 0.5 * (this.K1 * y[0] * y[0] + this.K2 * y[1] * y[1]) +
+      0.5 * (this.L1 * y[2] * y[2] + 2 * this.M * y[2] * y[3] + this.L2 * y[3] * y[3]);
+  };
+  RLCIdentity.prototype.energyParts = function (y) {
+    return {
+      uc1: 0.5 * this.K1 * y[0] * y[0],
+      uc2: 0.5 * this.K2 * y[1] * y[1],
+      ul: 0.5 * (this.L1 * y[2] * y[2] + 2 * this.M * y[2] * y[3] + this.L2 * y[3] * y[3])
+    };
+  };
+  RLCIdentity.prototype.drive = function (t) { return this.amplitude * Math.sin(this.omega * t); };
+  RLCIdentity.prototype.rhs = function (t, y, out) {
+    var q1 = y[0], q2 = y[1], i1 = y[2], i2 = y[3];
+    var u = this.amplitude * Math.sin(this.omega * t);
+    var r1 = u - this.K1 * q1 - this.R1 * i1;
+    var r2 = -this.K2 * q2 - this.R2 * i2 - this.Rload * i2;
+    out[0] = i1; out[1] = i2;
+    out[2] = this.Li00 * r1 + this.Li01 * r2;
+    out[3] = this.Li10 * r1 + this.Li11 * r2;
+    out[4] = u * i1;
+    out[5] = this.R1 * i1 * i1 + this.R2 * i2 * i2;
+    out[6] = this.Rload * i2 * i2;
+    return out;
+  };
+  // Analytic undamped normal modes, det(K - w^2 L) = 0, denominator 2(1-k^2).
+  RLCIdentity.prototype.analyticModes = function () {
+    var a = 1 / (this.L1 * this.C1), b = 1 / (this.L2 * this.C2), k = this.kappa;
+    var disc = Math.sqrt((a - b) * (a - b) + 4 * k * k * a * b);
+    return [Math.sqrt((a + b - disc) / (2 * (1 - k * k))), Math.sqrt((a + b + disc) / (2 * (1 - k * k)))];
+  };
+  // Independent route: eigenvalues of L^-1 K (2x2 characteristic polynomial).
+  RLCIdentity.prototype.numericModes = function () {
+    var a00 = this.Li00 * this.K1, a01 = this.Li01 * this.K2, a10 = this.Li10 * this.K1, a11 = this.Li11 * this.K2;
+    var tr = a00 + a11, dt = a00 * a11 - a01 * a10;
+    var s = Math.sqrt(Math.max(tr * tr / 4 - dt, 0));
+    var e = [tr / 2 - s, tr / 2 + s].sort(function (x, y) { return x - y; });
+    return [Math.sqrt(e[0]), Math.sqrt(e[1])];
+  };
+  // Analytic sinusoidal steady state of the same lossy linear model (peak phasors).
+  RLCIdentity.prototype.phasorResponse = function (ratio) {
+    var w = this.omega0 * ratio, A = 1;
+    var a11r = this.K1 - w * w * this.L1, a11i = w * this.R1;
+    var a12r = -w * w * this.M;
+    var a22r = this.K2 - w * w * this.L2, a22i = w * (this.R2 + this.Rload);
+    // D = a11*a22 - a12^2
+    var Dr = a11r * a22r - a11i * a22i - a12r * a12r;
+    var Di = a11r * a22i + a11i * a22r;
+    var Dm = Dr * Dr + Di * Di;
+    // Q1 = a22*A/D, Q2 = -a12*A/D
+    var Q1r = A * (a22r * Dr + a22i * Di) / Dm, Q1i = A * (a22i * Dr - a22r * Di) / Dm;
+    var Q2r = -A * a12r * Dr / Dm, Q2i = A * a12r * Di / Dm;
+    // I = i w Q
+    var I1r = -w * Q1i, I1i = w * Q1r, I2r = -w * Q2i, I2i = w * Q2r;
+    var I1m2 = I1r * I1r + I1i * I1i, I2m2 = I2r * I2r + I2i * I2i;
+    var pin = 0.5 * A * I1r;
+    var pload = 0.5 * this.Rload * I2m2;
+    var pcu = 0.5 * (this.R1 * I1m2 + this.R2 * I2m2);
+    return { pin: pin, pload: pload, pcu: pcu, eta: pin > 0 ? pload / pin : 0, i1: Math.sqrt(I1m2), i2: Math.sqrt(I2m2) };
+  };
+
+  // ---------------------------------------------------- Mechanical oscillator
+  // State: [x, v, W_in, W_damping]
+  function MechanicalIdentity(ratio) {
+    if (ratio === undefined) ratio = 1;
+    this.mass = 1; this.stiffness = 100; this.damping = 0.4; this.force = 0.1;
+    this.omega0 = Math.sqrt(this.stiffness / this.mass); this.omega = ratio * this.omega0;
+    this.ratio = ratio;
+    this.initial = new Float64Array(4);
+  }
+  MechanicalIdentity.prototype.admissible = function (y) { return y.length === 4 && allFinite(y); };
+  MechanicalIdentity.prototype.energy = function (y) { return 0.5 * this.mass * y[1] * y[1] + 0.5 * this.stiffness * y[0] * y[0]; };
+  MechanicalIdentity.prototype.forceAt = function (t) { return this.force * Math.cos(this.omega * t); };
+  MechanicalIdentity.prototype.rhs = function (t, y, out) {
+    var x = y[0], v = y[1], f = this.force * Math.cos(this.omega * t);
+    out[0] = v; out[1] = (f - this.damping * v - this.stiffness * x) / this.mass;
+    out[2] = f * v; out[3] = this.damping * v * v;
+    return out;
+  };
+  MechanicalIdentity.amplitudeAt = function (w) {
+    return 0.1 / Math.sqrt(Math.pow(100 - 1 * w * w, 2) + Math.pow(0.4 * w, 2));
+  };
+  MechanicalIdentity.phaseAt = function (w) { return Math.atan2(0.4 * w, 100 - 1 * w * w); };
+  MechanicalIdentity.prototype.amplitude = function () { return MechanicalIdentity.amplitudeAt(this.omega); };
+  MechanicalIdentity.prototype.phase = function () { return MechanicalIdentity.phaseAt(this.omega); };
+  MechanicalIdentity.prototype.avgPower = function () { var X = this.amplitude(); return 0.5 * this.damping * this.omega * this.omega * X * X; };
+
+  // ------------------------------------------------------------- Fluid rotor
+  // State: [Omega, W_rotor_in, W_bearing, W_load]. Imposed torque curve, NOT CFD.
+  function RotorIdentity(power) {
+    if (power === undefined) power = 100;
+    this.available = +power; this.capture = 0.65; this.free = 100; this.J = 0.1;
+    this.bearing = 0.01; this.load = 0.04; this.tau0 = 4 * this.capture * this.available / this.free;
+    this.initial = new Float64Array(4);
+  }
+  RotorIdentity.prototype.admissible = function (y) {
+    return y.length === 4 && allFinite(y) && -1e-9 <= y[0] && y[0] <= this.free + 1e-9;
+  };
+  RotorIdentity.prototype.energy = function (y) { return 0.5 * this.J * y[0] * y[0]; };
+  RotorIdentity.prototype.torque = function (w) { return this.tau0 * (1 - w / this.free); };
+  RotorIdentity.prototype.rhs = function (t, y, out) {
+    var w = y[0], tau = this.tau0 * (1 - w / this.free);
+    out[0] = (tau - (this.bearing + this.load) * w) / this.J;
+    out[1] = tau * w; out[2] = this.bearing * w * w; out[3] = this.load * w * w;
+    return out;
+  };
+  RotorIdentity.prototype.steady = function () { return this.tau0 / (this.tau0 / this.free + this.bearing + this.load); };
+
+  global.TSA = global.TSA || {};
+  global.TSA.RK4Engine = RK4Engine;
+  global.TSA.RLCIdentity = RLCIdentity;
+  global.TSA.MechanicalIdentity = MechanicalIdentity;
+  global.TSA.RotorIdentity = RotorIdentity;
+})(typeof self !== 'undefined' ? self : this);
+</script>
+<script>
+/* inlined from js/verify.js */
+/*
+ * Official numerical checks (Chapter 14 / Appendix A) re-implemented in the browser.
+ * Full official step counts. Runs in slices so the page stays responsive.
+ */
+(function (global) {
+  'use strict';
+  var T = global.TSA;
+  var GATES = { drivenScaled: 2e-5, mode: 1e-12, drift: 2e-5, rotorAbs: 1e-5, remainingTol: -1e-8 };
+
+  function* checks() {
+    var out = { rlc: [], mechanical: [], rotor: [], modeErrors: [], passed: true };
+    var configs = [['uncoupled', 0, 0.25e-6, 1], ['matched_k02', 0.2, 0.25e-6, 1],
+      ['matched_k05', 0.5, 0.25e-6, 1], ['lower_split_drive', 0.5, 0.25e-6, 1 / Math.sqrt(1.5)],
+      ['detuned_secondary', 0.2, 0.3025e-6, 1]];
+    var total = 5 * 19200 + 6000 + 5 * 19200 + 4 * 2000, done = 0, j, y;
+    for (var c = 0; c < configs.length; c++) {
+      var cf = configs[c];
+      var I = new T.RLCIdentity({ coupling: cf[1], C2: cf[2], driveRatio: cf[3] });
+      var period = 2 * Math.PI / I.omega, eng = new T.RK4Engine(I, period / 240);
+      var E0 = I.energy(eng.y), steps = 80 * 240, maxerr = 0;
+      var exact = I.analyticModes(), num = I.numericModes();
+      var modeErr = Math.max(Math.abs(exact[0] - num[0]) / exact[0], Math.abs(exact[1] - num[1]) / exact[1]);
+      out.modeErrors.push(modeErr);
+      for (j = 0; j < steps; j++) {
+        y = eng.step(); var E = I.energy(y), res = E - E0 - y[4] + y[5] + y[6];
+        var scale = Math.max(Math.abs(y[4]), Math.abs(E0), 1e-12); maxerr = Math.max(maxerr, Math.abs(res) / scale);
+        if (j % 2400 === 0) { done += 2400; yield done / total; }
+      }
+      out.rlc.push({ scenario: cf[0], coupling: cf[1], drive_ratio: cf[3], C2: cf[2], steps: steps,
+        mode_frequencies_rad_s: exact, mode_relative_error: modeErr,
+        input_energy_j: y[4], copper_loss_j: y[5], load_energy_j: y[6], final_energy_j: I.energy(y),
+        max_scaled_balance_error: maxerr,
+        pass: maxerr < GATES.drivenScaled && modeErr < GATES.mode });
+      out.passed = out.passed && maxerr < GATES.drivenScaled && modeErr < GATES.mode;
+    }
+    var IL = new T.RLCIdentity({ coupling: 0.2, lossless: true });
+    var engL = new T.RK4Engine(IL, (2 * Math.PI / IL.omega0) / 300);
+    var E0L = IL.energy(engL.y), drift = 0;
+    for (j = 0; j < 20 * 300; j++) {
+      engL.step(); drift = Math.max(drift, Math.abs(IL.energy(engL.y) - E0L) / E0L);
+      if (j % 2000 === 0) { done += 2000; yield done / total; }
+    }
+    out.lossless = { scenario: 'lossless_ringdown', steps: engL.k, maximum_relative_energy_drift: drift, pass: drift < GATES.drift };
+    out.passed = out.passed && drift < GATES.drift;
+    var ratios = [0.5, 0.9, 1, 1.1, 1.5];
+    for (var r = 0; r < ratios.length; r++) {
+      var IM = new T.MechanicalIdentity(ratios[r]);
+      var engM = new T.RK4Engine(IM, (2 * Math.PI / IM.omega) / 240), me = 0;
+      for (j = 0; j < 80 * 240; j++) {
+        y = engM.step(); var rs = IM.energy(y) - y[2] + y[3];
+        me = Math.max(me, Math.abs(rs) / Math.max(Math.abs(y[2]), 1e-12));
+        if (j % 2400 === 0) { done += 2400; yield done / total; }
+      }
+      out.mechanical.push({ drive_ratio: ratios[r], steady_amplitude_m: IM.amplitude(), displacement_lag_rad: IM.phase(),
+        max_scaled_balance_error: me, pass: me < GATES.drivenScaled });
+      out.passed = out.passed && me < GATES.drivenScaled;
+    }
+    var powers = [50, 100, 200, 500];
+    for (var p = 0; p < powers.length; p++) {
+      var IR = new T.RotorIdentity(powers[p]), engR = new T.RK4Engine(IR, 0.005), maxres = 0, minRem = Infinity;
+      for (j = 0; j < 2000; j++) {
+        y = engR.step(); var rr = IR.energy(y) - y[1] + y[2] + y[3]; maxres = Math.max(maxres, Math.abs(rr));
+        minRem = Math.min(minRem, powers[p] * engR.t - y[1]);
+      }
+      done += 2000; yield done / total;
+      var ok = maxres < GATES.rotorAbs && minRem >= GATES.remainingTol;
+      out.rotor.push({ available_flow_power_w: powers[p], final_speed_rad_s: y[0], steady_speed_rad_s: IR.steady(),
+        available_energy_j: powers[p] * engR.t, rotor_input_j: y[1], bearing_loss_j: y[2], load_energy_j: y[3],
+        final_rotor_energy_j: IR.energy(y), max_balance_error_j: maxres, minimum_unconverted_energy_j: minRem, pass: ok });
+      out.passed = out.passed && ok;
+    }
+    var rejected = 0;
+    [-0.1, 1].forEach(function (k) { try { new T.RLCIdentity({ coupling: k }); } catch (e) { rejected++; } });
+    out.invalid_coupling_rejections = rejected;
+    out.passed = out.passed && rejected === 2;
+    out.maximum_mode_relative_error = Math.max.apply(null, out.modeErrors);
+    out.status = out.passed ? 'PASS' : 'FAIL';
+    return out;
+  }
+
+  function runChecks(onProgress, onDone) {
+    var it = checks(), t0 = performance.now();
+    function slice() {
+      var sliceStart = performance.now();
+      while (performance.now() - sliceStart < 24) {
+        var r = it.next();
+        if (r.done) { r.value.elapsed_ms = performance.now() - t0; onDone(r.value); return; }
+        onProgress(r.value);
+      }
+      setTimeout(slice, 0);
+    }
+    setTimeout(slice, 0);
+  }
+
+  global.TSA.GATES = GATES;
+  global.TSA.runChecks = runChecks;
+  global.TSA.checksGenerator = checks;
+})(typeof self !== 'undefined' ? self : this);
+</script>
+<script>
+/* inlined from js/reference-report.js */
+/* Python reference report produced by tesla_systems_validation.py on this build machine (see tesla_results/). Values agree with dossier Appendix B. */
+window.TSA_REFERENCE = {
+ "status": "PASS",
+ "author": "Aries Lamont Grant",
+ "version": "2.0",
+ "python": "3.13.5",
+ "numpy": "2.5.4",
+ "scope": "Synthetic model-specific mode/energy/boundedness checks; no hardware validation",
+ "rlc": [
+  {
+   "identity": "RLC",
+   "scenario": "uncoupled",
+   "steps": 19200,
+   "coupling": 0.0,
+   "drive_ratio": 1.0,
+   "mode_frequencies_rad_s": [
+    31622.776601683792,
+    31622.776601683792
+   ],
+   "mode_relative_error": 0.0,
+   "input_energy_j": 0.011970527277009197,
+   "copper_loss_j": 0.010045006610020168,
+   "load_energy_j": 0.0,
+   "final_energy_j": 0.001925520656796868,
+   "max_scaled_balance_error": 3.6206546899753747e-06
+  },
+  {
+   "identity": "RLC",
+   "scenario": "matched_k02",
+   "steps": 19200,
+   "coupling": 0.2,
+   "drive_ratio": 1.0,
+   "mode_frequencies_rad_s": [
+    28867.513459481288,
+    35355.33905932737
+   ],
+   "mode_relative_error": 2.0579515874459977e-16,
+   "input_energy_j": 0.00016190554191106932,
+   "copper_loss_j": 4.7510967710444144e-05,
+   "load_energy_j": 0.00010220919619783662,
+   "final_energy_j": 1.2185378284554932e-05,
+   "max_scaled_balance_error": 4.224937239930423e-06
+  },
+  {
+   "identity": "RLC",
+   "scenario": "matched_k05",
+   "steps": 19200,
+   "coupling": 0.5,
+   "drive_ratio": 1.0,
+   "mode_frequencies_rad_s": [
+    25819.888974716112,
+    44721.35954999579
+   ],
+   "mode_relative_error": 1.6269535826721331e-16,
+   "input_energy_j": 2.626368316360174e-05,
+   "copper_loss_j": 7.538642968881588e-06,
+   "load_energy_j": 1.6671837232672845e-05,
+   "final_energy_j": 2.0532029993420904e-06,
+   "max_scaled_balance_error": 7.564700175302695e-06
+  },
+  {
+   "identity": "RLC",
+   "scenario": "lower_split_drive",
+   "steps": 19200,
+   "coupling": 0.5,
+   "drive_ratio": 0.8164965809277261,
+   "mode_frequencies_rad_s": [
+    25819.888974716112,
+    44721.35954999579
+   ],
+   "mode_relative_error": 1.6269535826721331e-16,
+   "input_energy_j": 0.006076589892097284,
+   "copper_loss_j": 0.002964286887540176,
+   "load_energy_j": 0.002112160726292669,
+   "final_energy_j": 0.0010001422719382658,
+   "max_scaled_balance_error": 7.071309504626772e-06
+  },
+  {
+   "identity": "RLC",
+   "scenario": "detuned_secondary",
+   "steps": 19200,
+   "coupling": 0.2,
+   "drive_ratio": 1.0,
+   "mode_frequencies_rad_s": [
+    27228.935250739516,
+    34075.40600605407
+   ],
+   "mode_relative_error": 0.0,
+   "input_energy_j": 0.00024350326006861034,
+   "copper_loss_j": 0.00012436327140609609,
+   "load_energy_j": 0.00010181822742113673,
+   "final_energy_j": 1.73217615911699e-05,
+   "max_scaled_balance_error": 4.258646033544679e-06
+  },
+  {
+   "identity": "RLC",
+   "scenario": "lossless_ringdown",
+   "steps": 6000,
+   "maximum_relative_energy_drift": 8.903224083203916e-09
+  }
+ ],
+ "mechanical": [
+  {
+   "drive_ratio": 0.5,
+   "steady_amplitude_m": 0.001332859511949028,
+   "displacement_lag_rad": 0.026660348374597954,
+   "max_scaled_balance_error": 1.1600422575543551e-07
+  },
+  {
+   "drive_ratio": 0.9,
+   "steady_amplitude_m": 0.005171153439613997,
+   "displacement_lag_rad": 0.18725391973348288,
+   "max_scaled_balance_error": 1.3053729591945483e-08
+  },
+  {
+   "drive_ratio": 1.0,
+   "steady_amplitude_m": 0.025,
+   "displacement_lag_rad": 1.5707963267948966,
+   "max_scaled_balance_error": 8.895289031528526e-09
+  },
+  {
+   "drive_ratio": 1.1,
+   "steady_amplitude_m": 0.004660700645456655,
+   "displacement_lag_rad": 2.935056580484117,
+   "max_scaled_balance_error": 6.278709635544829e-09
+  },
+  {
+   "drive_ratio": 1.5,
+   "steady_amplitude_m": 0.0007990799894733039,
+   "displacement_lag_rad": 3.0936294667127164,
+   "max_scaled_balance_error": 7.039769371526262e-09
+  }
+ ],
+ "rotor": [
+  {
+   "available_flow_power_w": 50.0,
+   "final_speed_rad_s": 20.59702863158492,
+   "steady_speed_rad_s": 20.634920634920636,
+   "available_energy_j": 500.0000000000082,
+   "rotor_input_j": 183.54543792937866,
+   "bearing_loss_j": 32.46671170138116,
+   "load_energy_j": 129.86684680552463,
+   "final_rotor_energy_j": 21.211879422516446,
+   "max_balance_error_j": 4.374101081339177e-11,
+   "minimum_unconverted_energy_j": 0.24978906296361916
+  },
+  {
+   "available_flow_power_w": 100.0,
+   "final_speed_rad_s": 34.19340560885573,
+   "steady_speed_rad_s": 34.21052631578947,
+   "available_energy_j": 1000.0000000000164,
+   "rotor_input_j": 528.2204984440766,
+   "bearing_loss_j": 93.95220981754906,
+   "load_energy_j": 375.80883927019624,
+   "final_rotor_energy_j": 58.45944935658631,
+   "max_balance_error_j": 2.5562485461705364e-10,
+   "minimum_unconverted_energy_j": 0.4991567995673215
+  },
+  {
+   "available_flow_power_w": 200.0,
+   "final_speed_rad_s": 50.97849719943956,
+   "steady_speed_rad_s": 50.98039215686274,
+   "available_energy_j": 2000.0000000000327,
+   "rotor_input_j": 1238.3470526786996,
+   "bearing_loss_j": 221.68133876897497,
+   "load_energy_j": 886.7253550758999,
+   "final_rotor_energy_j": 129.94035883566335,
+   "max_balance_error_j": 1.8399077816866338e-09,
+   "minimum_unconverted_energy_j": 0.9966315749976876
+  },
+  {
+   "available_flow_power_w": 500.0,
+   "final_speed_rad_s": 72.22222112227922,
+   "steady_speed_rad_s": 72.22222222222221,
+   "available_energy_j": 5000.000000000082,
+   "rotor_input_j": 2651.491765990744,
+   "bearing_loss_j": 478.1378609669664,
+   "load_energy_j": 1912.5514438678656,
+   "final_rotor_energy_j": 260.8024611917698,
+   "max_balance_error_j": 3.586410457501188e-08,
+   "minimum_unconverted_energy_j": 2.4790291594023515
+  }
+ ],
+ "invalid_coupling_rejections": 2,
+ "maximum_mode_relative_error": 2.0579515874459977e-16,
+ "limitations": [
+  "Lumped low-voltage illustrative circuit; no distributed Tesla-coil, streamer or spark-gap model.",
+  "Mechanical oscillator is an idealized forced damped model, not a historical device reconstruction.",
+  "Rotor torque characteristic is imposed, not CFD or measured Tesla turbine performance.",
+  "Input energy, physical losses, stored energy and load output remain separate.",
+  "No universal G*R*C*T law, universal zero-phase optimum, free energy or stable operation proof."
+ ]
+};
+</script>
+<script>
+/* inlined from js/app.js */
+/*
+ * Unified Tesla Resonant Systems Architecture v2.0 — interactive demonstration.
+ * Live simulations use the RK4 identities in physics.js (ported from Appendix A).
+ */
+(function () {
+  'use strict';
+  var T = window.TSA;
+  var TAU = Math.PI * 2;
+  // Palette for canvas drawing. Visual modes swap these values (see setMode); physics never reads them.
+  var PALETTE_STD = { input: '#e2a84b', stored: '#64b9cd', loss: '#e07c62', load: '#8dc285', resid: '#b9c3ca',
+    text: '#e2e8eb', muted: '#9aa8b1', faint: '#6b7b85', line: '#233038', line2: '#2d3c45', bg: '#0e1417',
+    copper: '#c4925a', steel: '#8d999f', wire: '#3c4b54', barBg: '#121a1e', hatch: '#1f2a30', massFill: '#1b262c',
+    massLine: '#4a5b65', shaft: '#b48a3e', disc0: '#1d282e', disc1: '#172126', disc2: '#19242a', discLine0: '#56666f',
+    discLine: '#33424b', hole: '#0b1013', holeLine: '#3a4952', hub: '#d0a654', legendBg: '#0e1417' };
+  var COL = Object.assign({}, PALETTE_STD);
+
+  // ------------------------------------------------------------ formatting
+  var PREF = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p']];
+  function si(v, unit, digits) {
+    if (digits === undefined) digits = 3;
+    if (!Number.isFinite(v)) return '—';
+    if (v === 0) return '0 ' + unit;
+    var a = Math.abs(v);
+    for (var k = 0; k < PREF.length; k++) {
+      if (a >= PREF[k][0] * 0.9995 || k === PREF.length - 1) {
+        var x = v / PREF[k][0];
+        var d = Math.max(0, digits - 1 - Math.floor(Math.log10(Math.abs(x) || 1)));
+        return x.toFixed(d) + ' ' + PREF[k][1] + unit;
+      }
+    }
+  }
+  function ex(v, d) {
+    if (!Number.isFinite(v)) return '—';
+    if (v === 0) return '0';
+    var s = v.toExponential(d === undefined ? 2 : d);
+    var m = s.split('e'); var e = parseInt(m[1], 10);
+    return m[0] + '×10' + sup(e);
+  }
+  var SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  function sup(n) { return String(n).split('').map(function (c) { return SUP[c] || c; }).join(''); }
+  function fx(v, d) { return Number.isFinite(v) ? v.toFixed(d) : '—'; }
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function $(id) { return document.getElementById(id); }
+
+  // ------------------------------------------------------------ simulations
+  function Ring(n) { this.n = n; this.a = []; }
+  Ring.prototype.push = function (v) { this.a.push(v); if (this.a.length > this.n) this.a.shift(); };
+  Ring.prototype.clear = function () { this.a.length = 0; };
+
+  // ---- Unified Principle framework references (computation layer only; not physical constants of these models)
+  var UP = { L0: 0, t0: 0, N: 56, LAMBDA_G: 6.8169, EPS: 1e-12,
+    // Supplied 17-mode transformation weights w_j for F_1..F_17 (attachment CSV, exact values).
+    W: [0.19287979660004634, 1.2372279763694192, 0.5412122557865747, 0.37524003408907713, 0.06971965750899434,
+      0.06970791107962239, 0.02459508703992364, 0.8266613655229695, 0.37776354846352567, 0.506071617776284,
+      0.008548985925067705, 1.4400413486849937, 0.7342629390793542, 0.09810601145122662, 0.08248360235584483,
+      0.0832778764621708, 0.14909998580490605] };
+  // D(t) = |X_t - X_(t-1)| / (Lambda_G + eps): a normalised change measure on a dimensionless,
+  // stroboscopically sampled state. Read-only diagnostic; it does not feed back into any model.
+  function Drift() { this.prev = null; this.D = NaN; this.n = 0; this.hist = new Ring(90); }
+  Drift.prototype.sample = function (X) {
+    if (this.prev) {
+      var s = 0; for (var i = 0; i < X.length; i++) { var d = X[i] - this.prev[i]; s += d * d; }
+      this.D = Math.sqrt(s) / (UP.LAMBDA_G + UP.EPS); this.hist.push(this.D);
+    }
+    this.prev = X.slice(); this.n++;
+  };
+
+  // ---- Coil
+  function CoilSim() {
+    this.p = { kappa: 0.2, ratio: 1, C2: 0.25e-6, lossless: false };
+    this.rate = 1; this.preset = 'matched_k02';
+    this.hist = new Ring(48 * 6);
+    this.reset();
+  }
+  CoilSim.prototype.build = function (keep) {
+    var prev = this.eng && !this.id.lossless && !this.p.lossless ? this.eng.y : null;
+    this.id = new T.RLCIdentity({ coupling: this.p.kappa, C2: this.p.C2, driveRatio: this.p.ratio, lossless: this.p.lossless });
+    var spp = this.p.lossless ? 300 : 240;
+    var period = TAU / (this.p.lossless ? this.id.omega0 : this.id.omega);
+    this.eng = new T.RK4Engine(this.id, period / spp);
+    if (keep && prev) for (var i = 0; i < 4; i++) this.eng.y[i] = prev[i];
+    this.spp = spp; this.period = period;
+    this.E0 = this.id.energy(this.eng.y);
+    this.res = 0; this.maxScaled = 0; this.maxDrift = 0; this.acc = 0;
+    this.last = null; this.pmark = [0, 0, 0]; this.segment = (this.segment || 0) + 1;
+    this.modes = this.id.analyticModes(); this.modesNum = this.id.numericModes();
+    this.modeErr = Math.max(Math.abs(this.modes[0] - this.modesNum[0]) / this.modes[0], Math.abs(this.modes[1] - this.modesNum[1]) / this.modes[1]);
+    this.decim = this.spp / 48;
+    this.curve = null;
+    // reference scales for the dimensionless drift state (analytic steady phasor amplitudes, or ringdown q0)
+    if (this.p.lossless) { this.Qr1 = this.Qr2 = 1e-6; this.Ir1 = this.Ir2 = this.id.omega0 * 1e-6; }
+    else { var pr = this.id.phasorResponse(this.p.ratio); this.Ir1 = Math.max(pr.i1, 1e-12); this.Ir2 = Math.max(pr.i2, 1e-12); this.Qr1 = this.Ir1 / this.id.omega; this.Qr2 = this.Ir2 / this.id.omega; }
+    this.drift = new Drift();
+  };
+  CoilSim.prototype.reset = function () {
+    this.eng = null; this.id = null; this.build(false); this.elapsed = 0; this.hist.clear();
+    this.imax = 1e-6; this.qmax = 1e-9; this.lmax = 1e-9; this.dot = [0, 0];
+  };
+  CoilSim.prototype.advance = function (dtFrame) {
+    this.acc += this.rate * this.spp * dtFrame;
+    var n = Math.min(Math.floor(this.acc), 4000); this.acc -= n;
+    if (this.acc > 4000) this.acc = 0;
+    var id = this.id, eng = this.eng;
+    for (var s = 0; s < n; s++) {
+      var y = eng.step(); this.elapsed += eng.dt;
+      var E = id.energy(y);
+      this.res = E - this.E0 - y[4] + y[5] + y[6];
+      if (id.lossless) this.maxDrift = Math.max(this.maxDrift, Math.abs(E - this.E0) / this.E0);
+      else this.maxScaled = Math.max(this.maxScaled, Math.abs(this.res) / Math.max(Math.abs(y[4]), Math.abs(this.E0), 1e-12));
+      if (eng.k % this.spp === 0) this.drift.sample([y[0] / this.Qr1, y[1] / this.Qr2, y[2] / this.Ir1, y[3] / this.Ir2]);
+      if (eng.k % this.spp === 0 && !id.lossless) {
+        var din = y[4] - this.pmark[0], dcu = y[5] - this.pmark[1], dld = y[6] - this.pmark[2];
+        this.last = { pin: din / this.period, pcu: dcu / this.period, pload: dld / this.period, eta: din > 0 ? dld / din : NaN };
+        this.pmark = [y[4], y[5], y[6]];
+      }
+      if (eng.k % this.decim === 0) this.hist.push([id.drive(eng.t), y[2], y[3], y[0], y[1]]);
+    }
+    var a = Math.max(Math.abs(eng.y[2]), Math.abs(eng.y[3]));
+    this.imax = Math.max(a, this.imax * 0.995, 1e-9);
+    var q = Math.max(Math.abs(eng.y[0] / id.C1), Math.abs(eng.y[1] / id.C2));
+    this.qmax = Math.max(q, this.qmax * 0.995, 1e-9);
+  };
+  CoilSim.prototype.responseCurve = function () {
+    if (this.curve) return this.curve;
+    if (this.p.lossless) return (this.curve = null);
+    var id = new T.RLCIdentity({ coupling: this.p.kappa, C2: this.p.C2, driveRatio: 1 });
+    var xs = [], pin = [], pl = [], eta = [];
+    for (var r = 0.6; r <= 1.6001; r += 0.0025) {
+      var o = id.phasorResponse(r); xs.push(r); pin.push(o.pin); pl.push(o.pload); eta.push(o.eta);
+    }
+    return (this.curve = { xs: xs, pin: pin, pload: pl, eta: eta });
+  };
+
+  // ---- Mechanical
+  function OscSim() { this.ratio = 1; this.rate = 1; this.hist = new Ring(64 * 3); this.reset(); }
+  OscSim.prototype.build = function (keep) {
+    var prev = this.eng ? this.eng.y : null;
+    this.id = new T.MechanicalIdentity(this.ratio);
+    this.period = TAU / this.id.omega; this.spp = 240;
+    this.eng = new T.RK4Engine(this.id, this.period / this.spp);
+    if (keep && prev) { this.eng.y[0] = prev[0]; this.eng.y[1] = prev[1]; }
+    this.E0 = this.id.energy(this.eng.y); this.res = 0; this.maxScaled = 0; this.acc = 0;
+    this.sc = 0; this.ss = 0; this.meas = null; this.pmark = [0, 0]; this.segStart = this.elapsed || 0;
+    this.segment = (this.segment || 0) + 1;
+    this.Xa = this.id.amplitude(); this.drift = new Drift();
+  };
+  OscSim.prototype.reset = function () { this.eng = null; this.elapsed = 0; this.build(false); this.hist.clear(); this.segStart = 0; };
+  OscSim.prototype.advance = function (dtFrame) {
+    this.acc += this.rate * dtFrame / this.eng.dt;
+    var n = Math.min(Math.floor(this.acc), 5000); this.acc -= n;
+    var id = this.id, eng = this.eng, w = id.omega;
+    for (var s = 0; s < n; s++) {
+      var y = eng.step(); this.elapsed += eng.dt;
+      this.res = id.energy(y) - this.E0 - y[2] + y[3];
+      // Same scaling as the official check, with the segment's initial energy included.
+      this.maxScaled = Math.max(this.maxScaled, Math.abs(this.res) / Math.max(Math.abs(y[2]), Math.abs(this.E0), 1e-12));
+      this.sc += y[0] * Math.cos(w * eng.t); this.ss += y[0] * Math.sin(w * eng.t);
+      if (eng.k % this.spp === 0) {
+        var Xc = 2 * this.sc / this.spp, Xs = 2 * this.ss / this.spp;
+        var din = y[2] - this.pmark[0], dd = y[3] - this.pmark[1];
+        this.meas = { amp: Math.hypot(Xc, Xs), lag: Math.atan2(Xs, Xc), pin: din / this.period, pdamp: dd / this.period };
+        this.sc = 0; this.ss = 0; this.pmark = [y[2], y[3]];
+        this.drift.sample([y[0] / this.Xa, y[1] / (w * this.Xa)]);
+      }
+      if (eng.k % 4 === 0) this.hist.push([id.forceAt(eng.t), y[0]]);
+    }
+  };
+
+  // ---- Rotor
+  function RotorSim() { this.power = 100; this.rate = 1; this.hist = new Ring(420); this.overlay = false; this.reset(); }
+  RotorSim.prototype.build = function (keep) {
+    var w = this.eng ? this.eng.y[0] : 0;
+    this.id = new T.RotorIdentity(this.power);
+    this.eng = new T.RK4Engine(this.id, 0.005);
+    if (keep) this.eng.y[0] = clamp(w, 0, this.id.free);
+    this.E0 = this.id.energy(this.eng.y); this.res = 0; this.maxRes = 0; this.minRem = Infinity; this.acc = 0;
+    this.segment = (this.segment || 0) + 1; this.drift = new Drift();
+  };
+  RotorSim.prototype.reset = function () {
+    this.eng = null; this.elapsed = 0; this.build(false); this.hist.clear(); this.theta = 0; this.flowPhase = 0;
+    this.particles = null; this.histTimer = 0;
+  };
+  RotorSim.prototype.advance = function (dtFrame) {
+    this.acc += this.rate * dtFrame / this.eng.dt;
+    var n = Math.min(Math.floor(this.acc), 800); this.acc -= n;
+    var id = this.id, eng = this.eng;
+    for (var s = 0; s < n; s++) {
+      var y = eng.step(); this.elapsed += eng.dt;
+      this.res = id.energy(y) - this.E0 - y[1] + y[2] + y[3];
+      this.maxRes = Math.max(this.maxRes, Math.abs(this.res));
+      this.minRem = Math.min(this.minRem, id.available * eng.t - y[1]);
+      if (eng.k % 50 === 0) this.drift.sample([y[0] / id.free]);
+      this.histTimer += eng.dt;
+      if (this.histTimer >= 0.05 - 1e-12) { this.histTimer = 0; this.hist.push([this.elapsed, y[0], id.load * y[0] * y[0], id.available]); }
+    }
+  };
+
+  var coil = new CoilSim(), osc = new OscSim(), rotor = new RotorSim();
+  window.TSA_APP = { coil: coil, osc: osc, rotor: rotor };
+
+  // ------------------------------------------------------------ canvas helpers
+  function prep(canvas) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return null;
+    var W = Math.round(w * dpr), H = Math.round(h * dpr);
+    if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    return { ctx: ctx, w: w, h: h };
+  }
+  function font(px, mono, weight) { return (weight || 400) + ' ' + px + 'px ' + (mono ? '"JetBrains Mono","SF Mono",ui-monospace,Menlo,Consolas,monospace' : '"Inter","Segoe UI",-apple-system,Helvetica,Arial,sans-serif'); }
+  // When TEXTQ is an array, stage text is deferred so post-processing (mirrors, point field, inversion lens)
+  // never distorts labels; it is replayed crisply on top afterwards.
+  var TEXTQ = null;
+  function text(ctx, s, x, y, o) {
+    if (TEXTQ) { TEXTQ.push([s, x, y, o]); return; }
+    o = o || {}; ctx.font = font(o.size || 11, o.mono, o.weight); ctx.fillStyle = o.color || COL.muted;
+    ctx.textAlign = o.align || 'left'; ctx.textBaseline = o.base || 'alphabetic'; ctx.fillText(s, x, y);
+  }
+  function alpha(hex, a) {
+    var n = parseInt(hex.slice(1), 16);
+    return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + clamp(a, 0, 1).toFixed(3) + ')';
+  }
+  function niceTicks(a, b, n) {
+    var span = b - a; if (span <= 0) return [a];
+    var step = Math.pow(10, Math.floor(Math.log10(span / n)));
+    var err = span / n / step;
+    if (err >= 7.5) step *= 10; else if (err >= 3.5) step *= 5; else if (err >= 1.5) step *= 2;
+    var out = [], v = Math.ceil(a / step - 1e-9) * step;
+    for (; v <= b + 1e-9 * step; v += step) out.push(Math.abs(v) < step * 1e-9 ? 0 : v);
+    return out;
+  }
+  function arrow(ctx, x1, y1, x2, y2, color, width, head) {
+    var a = Math.atan2(y2 - y1, x2 - x1); head = head || 7;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width || 1.5;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - head * Math.cos(a - 0.42), y2 - head * Math.sin(a - 0.42));
+    ctx.lineTo(x2 - head * Math.cos(a + 0.42), y2 - head * Math.sin(a + 0.42)); ctx.closePath(); ctx.fill();
+  }
+
+  // Generic chart with optional log y and secondary axis.
+  function plot(c, cfg) {
+    var ctx = c.ctx, w = c.w, h = c.h;
+    var pl = 46, pr = cfg.y2 ? 46 : 12, pt = 18, pb = 28;
+    var X0 = pl, X1 = w - pr, Y0 = h - pb, Y1 = pt;
+    var lg = !!cfg.logY;
+    function tx(v) { return X0 + (v - cfg.x[0]) / (cfg.x[1] - cfg.x[0]) * (X1 - X0); }
+    function ty(v, ax) {
+      var r = ax === 2 ? cfg.y2 : cfg.y;
+      if (lg && ax !== 2) { v = Math.log10(Math.max(v, 1e-300)); return Y0 - (v - Math.log10(r[0])) / (Math.log10(r[1]) - Math.log10(r[0])) * (Y0 - Y1); }
+      return Y0 - (v - r[0]) / (r[1] - r[0]) * (Y0 - Y1);
+    }
+    ctx.lineWidth = 1;
+    // grid
+    var yt = cfg.yTicks || (lg ? (function () { var a = []; for (var e = Math.ceil(Math.log10(cfg.y[0])); e <= Math.floor(Math.log10(cfg.y[1])); e++) a.push(Math.pow(10, e)); return a; })() : niceTicks(cfg.y[0], cfg.y[1], 4));
+    var xt = cfg.xTicks || niceTicks(cfg.x[0], cfg.x[1], 5);
+    ctx.strokeStyle = COL.line; ctx.beginPath();
+    yt.forEach(function (v) { var y = Math.round(ty(v)) + 0.5; ctx.moveTo(X0, y); ctx.lineTo(X1, y); });
+    xt.forEach(function (v) { var x = Math.round(tx(v)) + 0.5; ctx.moveTo(x, Y1); ctx.lineTo(x, Y0); });
+    ctx.stroke();
+    ctx.strokeStyle = COL.line2; ctx.strokeRect(X0 + 0.5, Y1 + 0.5, X1 - X0 - 1, Y0 - Y1 - 1);
+    yt.forEach(function (v) { text(ctx, (cfg.yFmt || String)(v), X0 - 6, ty(v) + 3.5, { align: 'right', mono: true, size: 10, color: COL.faint }); });
+    xt.forEach(function (v) { text(ctx, (cfg.xFmt || String)(v), tx(v), Y0 + 13, { align: 'center', mono: true, size: 10, color: COL.faint }); });
+    if (cfg.y2) {
+      var y2t = cfg.y2Ticks || niceTicks(cfg.y2[0], cfg.y2[1], 4);
+      y2t.forEach(function (v) { text(ctx, (cfg.y2Fmt || String)(v), X1 + 6, ty(v, 2) + 3.5, { mono: true, size: 10, color: COL.faint }); });
+    }
+    if (cfg.xLabel) text(ctx, cfg.xLabel, X1, Y0 + 25, { align: 'right', size: 10.5, color: COL.faint });
+    if (cfg.yLabel) text(ctx, cfg.yLabel, X0, Y1 - 6, { size: 10.5, color: COL.faint });
+    if (cfg.y2Label) text(ctx, cfg.y2Label, X1, Y1 - 6, { align: 'right', size: 10.5, color: COL.faint });
+    ctx.save(); ctx.beginPath(); ctx.rect(X0, Y1, X1 - X0, Y0 - Y1); ctx.clip();
+    (cfg.hlines || []).forEach(function (l) {
+      var y = ty(l.y, l.axis); ctx.strokeStyle = l.color; ctx.setLineDash(l.dash || [4, 4]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X0, y); ctx.lineTo(X1, y); ctx.stroke(); ctx.setLineDash([]);
+      if (l.label) text(ctx, l.label, l.labelLeft ? X0 + 5 : X1 - 5, y - 4, { align: l.labelLeft ? 'left' : 'right', size: 10, color: l.color });
+    });
+    (cfg.vlines || []).forEach(function (l) {
+      var x = tx(l.x); ctx.strokeStyle = l.color; ctx.setLineDash(l.dash || [3, 3]); ctx.lineWidth = l.width || 1;
+      ctx.beginPath(); ctx.moveTo(x, Y1); ctx.lineTo(x, Y0); ctx.stroke(); ctx.setLineDash([]);
+      if (l.label) text(ctx, l.label, x + 4, Y1 + 11 + (l.row || 0) * 12, { size: 10, color: l.color, mono: true });
+    });
+    (cfg.series || []).forEach(function (s) {
+      ctx.strokeStyle = s.color; ctx.lineWidth = s.width || 1.6; ctx.setLineDash(s.dash || []); ctx.lineJoin = 'round';
+      ctx.beginPath(); var started = false;
+      for (var i = 0; i < s.x.length; i++) {
+        var yv = s.y[i]; if (!Number.isFinite(yv) || (lg && s.axis !== 2 && yv <= 0)) { started = false; continue; }
+        var X = tx(s.x[i]), Y = ty(yv, s.axis);
+        if (!started) { ctx.moveTo(X, Y); started = true; } else ctx.lineTo(X, Y);
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+    });
+    (cfg.points || []).forEach(function (p) {
+      if (!Number.isFinite(p.y) || (lg && p.axis !== 2 && p.y <= 0)) return;
+      var X = tx(p.x), Y = ty(p.y, p.axis);
+      ctx.beginPath(); ctx.arc(X, Y, p.r || 4, 0, TAU);
+      if (p.ring) { ctx.strokeStyle = p.color; ctx.lineWidth = 1.6; ctx.fillStyle = COL.bg; ctx.fill(); ctx.stroke(); }
+      else { ctx.fillStyle = p.color; ctx.fill(); }
+    });
+    ctx.restore();
+    if (cfg.legend) {
+      var lx = X0 + 8, ly = Y1 + 12;
+      ctx.font = font(10);
+      var maxW = 0; cfg.legend.forEach(function (l) { maxW = Math.max(maxW, ctx.measureText(l.label).width); });
+      var bw = maxW + 30, bh = cfg.legend.length * 13 + 6;
+      if (cfg.legendRight) lx = X1 - bw - 4;
+      ctx.fillStyle = alpha(COL.legendBg, 0.82); ctx.fillRect(lx - 4, ly - 10, bw, bh);
+      cfg.legend.forEach(function (l, k) {
+        var yy = ly + k * 13; ctx.strokeStyle = l.color; ctx.lineWidth = 2; ctx.setLineDash(l.dash || []);
+        ctx.beginPath(); ctx.moveTo(lx, yy - 3.5); ctx.lineTo(lx + 16, yy - 3.5); ctx.stroke(); ctx.setLineDash([]);
+        text(ctx, l.label, lx + 22, yy, { size: 10, color: COL.muted });
+      });
+    }
+  }
+
+  // ------------------------------------------------------------ coil stage
+  function rectPath(x0, y0, x1, y1) {
+    var pts = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], seg = [], L = 0;
+    for (var i = 0; i < 4; i++) { var a = pts[i], b = pts[(i + 1) % 4], l = Math.hypot(b[0] - a[0], b[1] - a[1]); seg.push([a, b, l, L]); L += l; }
+    return { seg: seg, L: L, at: function (s) {
+      s = ((s % L) + L) % L;
+      for (var i = 0; i < 4; i++) { var g = seg[i]; if (s <= g[3] + g[2]) { var u = (s - g[3]) / g[2]; return [g[0][0] + (g[1][0] - g[0][0]) * u, g[0][1] + (g[1][1] - g[0][1]) * u]; } }
+      return pts[0];
+    } };
+  }
+  function drawCoilWinding(ctx, x, yTop, H, turns, rw, inten) {
+    var pitch = H / turns;
+    ctx.save();
+    ctx.lineWidth = 1.6;
+    if (inten > 0.05) { ctx.shadowColor = alpha(COL.input, 0.6 * inten); ctx.shadowBlur = 10 * inten; }
+    for (var k = 0; k < turns; k++) {
+      var yc = yTop + (k + 0.5) * pitch;
+      ctx.strokeStyle = alpha(COL.copper, 0.35);
+      ctx.beginPath(); ctx.ellipse(x, yc, rw, pitch * 0.42, 0, Math.PI, TAU); ctx.stroke();
+      ctx.strokeStyle = alpha(COL.copper, 0.6 + 0.4 * inten);
+      ctx.beginPath(); ctx.ellipse(x, yc, rw, pitch * 0.42, 0, 0, Math.PI); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function drawCap(ctx, x, y, q, qn, vertical, plateLen) {
+    // two plates across a horizontal wire at (x, y); charge shading +/-
+    var g = 4.5, L = plateLen;
+    var a = clamp(Math.abs(qn), 0, 1);
+    var pos = alpha(COL.input, 0.25 + 0.75 * a), neg = alpha(COL.stored, 0.25 + 0.75 * a);
+    ctx.fillStyle = COL.bg; ctx.fillRect(x - g - 2, y - L / 2 - 2, 2 * g + 4, L + 4);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = q >= 0 ? pos : neg; ctx.beginPath(); ctx.moveTo(x - g, y - L / 2); ctx.lineTo(x - g, y + L / 2); ctx.stroke();
+    ctx.strokeStyle = q >= 0 ? neg : pos; ctx.beginPath(); ctx.moveTo(x + g, y - L / 2); ctx.lineTo(x + g, y + L / 2); ctx.stroke();
+  }
+  function drawRes(ctx, x, y, len, vertical, color, glow) {
+    ctx.save();
+    ctx.fillStyle = COL.bg;
+    if (vertical) ctx.fillRect(x - 7, y - len / 2, 14, len); else ctx.fillRect(x - len / 2, y - 7, len, 14);
+    if (glow > 0.03) { ctx.shadowColor = alpha(color, 0.8 * glow); ctx.shadowBlur = 12 * glow; }
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.beginPath();
+    var n = 6;
+    for (var k = 0; k <= n; k++) {
+      var u = -len / 2 + k * len / n, o = (k === 0 || k === n) ? 0 : (k % 2 ? 5 : -5);
+      if (vertical) { if (k === 0) ctx.moveTo(x + o, y + u); else ctx.lineTo(x + o, y + u); }
+      else { if (k === 0) ctx.moveTo(x + u, y + o); else ctx.lineTo(x + u, y + o); }
+    }
+    ctx.stroke(); ctx.restore();
+  }
+
+  function drawCoil(c, sim, compact, frameDt) {
+    var ctx = c.ctx, w = c.w, h = c.h, id = sim.id, y = sim.eng.y;
+    var top0 = compact ? 16 : 34, bot0 = h - (compact ? 34 : 70);
+    var top = top0 + (bot0 - top0) * 0.06, bot = bot0 - (bot0 - top0) * 0.02;
+    var pL = w * 0.07, pR = w * 0.43, sL = w * 0.57, sR = w * 0.92;
+    var H = bot - top;
+    var i1 = y[2], i2 = y[3], in1 = i1 / sim.imax, in2 = i2 / sim.imax;
+    var lam1 = id.L1 * i1 + id.M * i2, lam2 = id.M * i1 + id.L2 * i2;
+    sim.lmax = Math.max(Math.abs(lam1), Math.abs(lam2), (sim.lmax || 1e-12) * 0.995, 1e-12);
+    var ln1 = lam1 / sim.lmax, ln2 = lam2 / sim.lmax;
+    var cw1 = w * (compact ? 0.035 : 0.03), cw2 = w * (compact ? 0.026 : 0.022);
+    var H1 = H * 0.56, H2 = H * 0.78;
+    var cyc = (top + bot) / 2;
+
+    // flux: self loops + shared (coupled) loops through both coil axes
+    ctx.save(); ctx.lineWidth = 1;
+    var mid = (pR + sL) / 2, half = (sL - pR) / 2;
+    var nShared = Math.round(sim.p.kappa * 10);
+    var lnShared = (Math.abs(ln1) + Math.abs(ln2)) / 2;
+    for (var j = 0; j < nShared; j++) {
+      var ry = H * (0.28 + 0.05 * j);
+      ctx.strokeStyle = alpha(COL.stored, 0.08 + 0.42 * lnShared * (1 - j / (nShared + 2)));
+      ctx.setLineDash([5, 5]); ctx.lineDashOffset = -(ln1 + ln2) * 10;
+      ctx.beginPath(); ctx.ellipse(mid, cyc, half, ry, 0, 0, TAU); ctx.stroke();
+    }
+    for (var s = 0; s < 3; s++) {
+      var rx1 = w * (0.05 + 0.025 * s), ry1 = H1 * (0.55 + 0.12 * s);
+      ctx.strokeStyle = alpha(COL.stored, 0.06 + 0.3 * Math.abs(ln1) * (1 - s * 0.25)); ctx.lineDashOffset = ln1 * 10;
+      ctx.beginPath(); ctx.ellipse(pR - rx1, cyc, rx1, ry1, 0, -Math.PI / 2, Math.PI / 2, true); ctx.stroke();
+      var rx2 = w * (0.05 + 0.025 * s), ry2 = H2 * (0.5 + 0.1 * s);
+      ctx.strokeStyle = alpha(COL.stored, 0.06 + 0.3 * Math.abs(ln2) * (1 - s * 0.25)); ctx.lineDashOffset = -ln2 * 10;
+      ctx.beginPath(); ctx.ellipse(sL + rx2, cyc, rx2, ry2, 0, -Math.PI / 2, Math.PI / 2); ctx.stroke();
+    }
+    ctx.restore();
+
+    // wires
+    ctx.strokeStyle = COL.wire; ctx.lineWidth = 1.5;
+    ctx.strokeRect(pL, top, pR - pL, H); ctx.strokeRect(sL, top, sR - sL, H);
+    // current markers
+    var p1 = rectPath(pL, top, pR, bot), p2 = rectPath(sL, top, sR, bot);
+    var spd = compact ? 60 : 90;
+    sim.dot[0] += in1 * spd * frameDt; sim.dot[1] += in2 * spd * frameDt;
+    [[p1, sim.dot[0], in1], [p2, sim.dot[1], in2]].forEach(function (d) {
+      var nd = compact ? 12 : 18, a = 0.25 + 0.75 * Math.abs(d[2]);
+      ctx.fillStyle = alpha(COL.input, a);
+      for (var k = 0; k < nd; k++) { var pt = d[0].at(d[1] + k * d[0].L / nd); ctx.beginPath(); ctx.arc(pt[0], pt[1], compact ? 1.8 : 2.2, 0, TAU); ctx.fill(); }
+    });
+    // windings (mask wire behind them)
+    ctx.fillStyle = COL.bg;
+    ctx.fillRect(pR - cw1 - 2, cyc - H1 / 2, 2 * cw1 + 4, H1); ctx.fillRect(sL - cw2 - 2, cyc - H2 / 2, 2 * cw2 + 4, H2);
+    drawCoilWinding(ctx, pR, cyc - H1 / 2, H1, 6, cw1, Math.abs(in1));
+    drawCoilWinding(ctx, sL, cyc - H2 / 2, H2, 12, cw2, Math.abs(in2));
+    // capacitors
+    var V1 = y[0] / id.C1, V2 = y[1] / id.C2;
+    drawCap(ctx, (pL + pR) / 2, top, V1, V1 / sim.qmax, false, compact ? 16 : 24);
+    drawCap(ctx, (sL + sR) / 2, top, V2, V2 / sim.qmax, false, compact ? 16 : 24);
+    // resistors
+    var pLoadInst = id.Rload * i2 * i2, pLoadMax = id.Rload * sim.imax * sim.imax;
+    if (!id.lossless) {
+      drawRes(ctx, (pL + pR) / 2, bot, compact ? 22 : 32, false, COL.loss, (id.R1 * i1 * i1) / (id.R1 * sim.imax * sim.imax + 1e-30));
+      drawRes(ctx, (sL + sR) / 2, bot, compact ? 22 : 32, false, COL.loss, (id.R2 * i2 * i2) / (id.R2 * sim.imax * sim.imax + 1e-30));
+      drawRes(ctx, sR, cyc, compact ? 30 : 44, true, COL.load, pLoadInst / (pLoadMax + 1e-30));
+    }
+    // source
+    var sx = pL, sy = cyc, sr = compact ? 9 : 13;
+    ctx.fillStyle = COL.bg; ctx.strokeStyle = id.lossless ? COL.faint : COL.input; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    for (var k2 = 0; k2 <= 20; k2++) { var u = k2 / 20, xx = sx - sr * 0.6 + u * sr * 1.2, yy = sy - Math.sin(u * TAU) * sr * 0.35; if (k2) ctx.lineTo(xx, yy); else ctx.moveTo(xx, yy); }
+    ctx.stroke();
+    if (!id.lossless) {
+      var un = id.drive(sim.eng.t);
+      ctx.fillStyle = alpha(COL.input, 0.25 + 0.6 * Math.abs(un)); ctx.beginPath(); ctx.arc(sx, sy, 3, 0, TAU); ctx.fill();
+    }
+
+    // labels
+    if (!compact) {
+      var lc = COL.muted, vc = COL.text;
+      text(ctx, 'PRIMARY', pL, top0 - 14, { size: 10, weight: 600, color: COL.faint });
+      text(ctx, 'SECONDARY', sR, top0 - 14, { align: 'right', size: 10, weight: 600, color: COL.faint });
+      text(ctx, id.lossless ? 'no drive' : 'u(t) = 1 V · sin ωt', sx + sr + 6, sy - 6, { size: 10.5, color: lc });
+      text(ctx, 'ω = ' + si(id.omega, 'rad/s', 4), sx + sr + 6, sy + 8, { size: 10, mono: true, color: COL.faint });
+      text(ctx, 'C₁ 1 µF', (pL + pR) / 2, top - 18, { align: 'center', size: 10.5, color: lc });
+      text(ctx, 'V = ' + si(V1, 'V'), (pL + pR) / 2, top + 20, { align: 'center', size: 10.5, mono: true, color: vc });
+      text(ctx, 'C₂ ' + fx(id.C2 * 1e6, 4) + ' µF', (sL + sR) / 2, top - 18, { align: 'center', size: 10.5, color: lc });
+      text(ctx, 'V = ' + si(V2, 'V'), (sL + sR) / 2, top + 20, { align: 'center', size: 10.5, mono: true, color: vc });
+      text(ctx, 'L₁ 1 mH', pR - cw1 - 8, cyc - H1 / 2 - 6, { align: 'right', size: 10.5, color: lc });
+      text(ctx, 'L₂ 4 mH', sL + cw2 + 8, cyc - H2 / 2 - 6, { size: 10.5, color: lc });
+      text(ctx, 'i₁ = ' + si(i1, 'A'), pR - cw1 - 8, cyc + H1 / 2 + 14, { align: 'right', size: 10.5, mono: true, color: vc });
+      text(ctx, 'i₂ = ' + si(i2, 'A'), sL + cw2 + 8, cyc + H2 / 2 + 14, { size: 10.5, mono: true, color: vc });
+      text(ctx, 'M = κ√(L₁L₂) = ' + si(id.M, 'H'), mid, top0 - 14, { align: 'center', size: 10.5, mono: true, color: COL.stored });
+      if (!id.lossless) {
+        text(ctx, 'R₁ 0.5 Ω cu', (pL + pR) / 2, bot + 20, { align: 'center', size: 10, color: COL.loss });
+        text(ctx, 'R₂ 0.8 Ω cu', (sL + sR) / 2, bot + 20, { align: 'center', size: 10, color: COL.loss });
+        text(ctx, 'R_L 2 Ω', sR + 10, cyc - 4, { size: 10.5, color: COL.load });
+        text(ctx, 'load', sR + 10, cyc + 9, { size: 10, color: COL.faint });
+      } else {
+        text(ctx, 'R = 0 (lossless)', (pL + pR) / 2, bot + 18, { align: 'center', size: 10, color: COL.faint });
+        text(ctx, 'R = 0', (sL + sR) / 2, bot + 18, { align: 'center', size: 10, color: COL.faint });
+      }
+    }
+    // stored energy split bar
+    var parts = id.energyParts(y), tot = parts.uc1 + parts.uc2 + parts.ul;
+    var bx = compact ? 10 : 18, bw = w - 2 * bx, byy = h - (compact ? 14 : 22), bh = compact ? 5 : 7;
+    ctx.fillStyle = COL.barBg; ctx.fillRect(bx, byy, bw, bh);
+    if (tot > 0) {
+      var f1 = parts.uc1 / tot, f2 = parts.uc2 / tot;
+      ctx.fillStyle = alpha(COL.input, 0.85); ctx.fillRect(bx, byy, bw * f1, bh);
+      ctx.fillStyle = alpha(COL.input, 0.45); ctx.fillRect(bx + bw * f1, byy, bw * f2, bh);
+      ctx.fillStyle = alpha(COL.stored, 0.85); ctx.fillRect(bx + bw * (f1 + f2), byy, bw * (1 - f1 - f2), bh);
+    }
+    var lbl = 'Stored U = ' + si(tot, 'J') + (compact ? '' : '   ·   electric C₁ ' + fx(tot ? 100 * parts.uc1 / tot : 0, 0) + ' %  ·  electric C₂ ' + fx(tot ? 100 * parts.uc2 / tot : 0, 0) + ' %  ·  magnetic (incl. mutual) ' + fx(tot ? 100 * parts.ul / tot : 0, 0) + ' %');
+    text(ctx, lbl, bx, byy - 5, { size: compact ? 10 : 10.5, mono: true, color: COL.muted });
+  }
+
+  // ------------------------------------------------------------ oscillator stage
+  function drawOsc(c, sim, compact) {
+    var ctx = c.ctx, w = c.w, h = c.h, id = sim.id, y = sim.eng.y;
+    var cy = h * (compact ? 0.42 : 0.36);
+    var wallX = w * 0.07, x0 = w * 0.56;
+    var scale = (w * 0.2) / 0.025;
+    var mw = w * (compact ? 0.13 : 0.1), mh = compact ? 44 : 64;
+    var xm = x0 + y[0] * scale;
+    var floorY = cy + mh / 2 + 2;
+    // wall + floor
+    ctx.strokeStyle = COL.line2; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(wallX, cy - mh); ctx.lineTo(wallX, floorY); ctx.lineTo(w * 0.95, floorY); ctx.stroke();
+    ctx.strokeStyle = COL.hatch; ctx.lineWidth = 1;
+    for (var k = 0; k < 9; k++) { var yy = cy - mh + k * (floorY - cy + mh) / 8; ctx.beginPath(); ctx.moveTo(wallX, yy); ctx.lineTo(wallX - 8, yy + 8); ctx.stroke(); }
+    // analytic envelope
+    var Xa = id.amplitude();
+    ctx.strokeStyle = alpha(COL.stored, 0.6); ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+    [x0 - Xa * scale, x0 + Xa * scale].forEach(function (xx) { ctx.beginPath(); ctx.moveTo(xx, cy - mh / 2 - 22); ctx.lineTo(xx, floorY); ctx.stroke(); });
+    ctx.strokeStyle = alpha(COL.faint, 0.6);
+    ctx.beginPath(); ctx.moveTo(x0, cy - mh / 2 - 30); ctx.lineTo(x0, floorY + 4); ctx.stroke(); ctx.setLineDash([]);
+    // spring
+    var sy = cy - mh * 0.2, x1 = wallX, x2 = xm - mw / 2, n = 14, amp = compact ? 6 : 8;
+    ctx.strokeStyle = COL.steel; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x1, sy);
+    var lead = 10; ctx.lineTo(x1 + lead, sy);
+    for (var i = 1; i < n; i++) ctx.lineTo(x1 + lead + (x2 - x1 - 2 * lead) * i / n, sy + (i % 2 ? -amp : amp));
+    ctx.lineTo(x2 - lead, sy); ctx.lineTo(x2, sy); ctx.stroke();
+    // damper
+    var dy = cy + mh * 0.24, cylL = (x0 - mw / 2 - wallX) * 0.55, cylH = compact ? 10 : 14;
+    ctx.strokeStyle = COL.steel; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(wallX, dy); ctx.lineTo(wallX + 12, dy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(wallX + 12 + cylL, dy - cylH / 2); ctx.lineTo(wallX + 12, dy - cylH / 2); ctx.lineTo(wallX + 12, dy + cylH / 2); ctx.lineTo(wallX + 12 + cylL, dy + cylH / 2); ctx.stroke();
+    var pistX = wallX + 12 + cylL * 0.6 + y[0] * scale;
+    var dampP = id.damping * y[1] * y[1], dampMax = id.damping * Math.pow(id.omega * Math.max(Xa, 1e-6), 2);
+    ctx.strokeStyle = alpha(COL.loss, 0.45 + 0.55 * clamp(dampP / dampMax, 0, 1));
+    ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(pistX, dy - cylH / 2 + 2); ctx.lineTo(pistX, dy + cylH / 2 - 2); ctx.stroke();
+    ctx.strokeStyle = COL.steel; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(pistX, dy); ctx.lineTo(xm - mw / 2, dy); ctx.stroke();
+    // mass
+    ctx.fillStyle = COL.massFill; ctx.strokeStyle = COL.massLine; ctx.lineWidth = 1.2;
+    ctx.fillRect(xm - mw / 2, cy - mh / 2, mw, mh); ctx.strokeRect(xm - mw / 2 + 0.5, cy - mh / 2 + 0.5, mw - 1, mh - 1);
+    var ke = 0.5 * id.mass * y[1] * y[1], E = id.energy(y);
+    ctx.fillStyle = alpha(COL.stored, 0.12 + 0.5 * (E > 0 ? ke / E : 0)); ctx.fillRect(xm - mw / 2 + 3, cy - mh / 2 + 3, mw - 6, mh - 6);
+    text(ctx, 'm 1 kg', xm, cy + 4, { align: 'center', size: compact ? 10 : 11, color: COL.text, weight: 500 });
+    // force arrow
+    var F = id.forceAt(sim.eng.t), fl = (F / id.force) * w * 0.08, fy = cy - mh / 2 - 12;
+    if (Math.abs(fl) > 3) arrow(ctx, xm, fy, xm + fl, fy, COL.input, 2, 7);
+    else { ctx.fillStyle = COL.input; ctx.beginPath(); ctx.arc(xm, fy, 2, 0, TAU); ctx.fill(); }
+    if (!compact) {
+      text(ctx, 'F(t) = ' + si(F, 'N'), xm, fy - 12, { align: 'center', size: 10.5, mono: true, color: COL.input });
+      text(ctx, 'k_s 100 N/m', (x1 + x2) / 2, sy - 14, { align: 'center', size: 10.5, color: COL.muted });
+      text(ctx, 'c_m 0.4 N·s/m', wallX + 12 + cylL / 2, dy + cylH / 2 + 14, { align: 'center', size: 10.5, color: COL.loss });
+      text(ctx, '±X(ω) analytic', x0 + Xa * scale + 6, floorY - 4, { size: 10, color: COL.stored });
+      // ruler (mm)
+      var ry = floorY + 18;
+      ctx.strokeStyle = COL.line2; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x0 - 0.03 * scale, ry); ctx.lineTo(x0 + 0.03 * scale, ry); ctx.stroke();
+      for (var mm = -30; mm <= 30; mm += 5) {
+        var rx = x0 + mm / 1000 * scale, tl = mm % 10 === 0 ? 6 : 3;
+        ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx, ry + tl); ctx.stroke();
+        if (mm % 10 === 0) text(ctx, String(mm), rx, ry + 17, { align: 'center', size: 9.5, mono: true, color: COL.faint });
+      }
+      text(ctx, 'mm', x0 + 0.03 * scale + 10, ry + 17, { size: 9.5, color: COL.faint });
+      ctx.fillStyle = COL.input; ctx.beginPath(); ctx.moveTo(xm, ry - 1); ctx.lineTo(xm - 4, ry - 7); ctx.lineTo(xm + 4, ry - 7); ctx.closePath(); ctx.fill();
+      text(ctx, 'x = ' + fx(y[0] * 1000, 2) + ' mm', 18, h - 52, { size: 10.5, mono: true, color: COL.text });
+      text(ctx, 'v = ' + fx(y[1] * 1000, 1) + ' mm/s', 150, h - 52, { size: 10.5, mono: true, color: COL.muted });
+      text(ctx, 'ω/ω₀ = ' + fx(sim.ratio, 3), w - 18, h - 52, { align: 'right', size: 10.5, mono: true, color: COL.muted });
+    }
+    // stored energy split: kinetic vs elastic
+    var pe = 0.5 * id.stiffness * y[0] * y[0];
+    var bx = compact ? 10 : 18, bw = w - 2 * bx, byy = h - (compact ? 14 : 22), bh = compact ? 5 : 7;
+    ctx.fillStyle = COL.barBg; ctx.fillRect(bx, byy, bw, bh);
+    if (E > 0) { ctx.fillStyle = alpha(COL.stored, 0.85); ctx.fillRect(bx, byy, bw * ke / E, bh); ctx.fillStyle = alpha(COL.steel, 0.7); ctx.fillRect(bx + bw * ke / E, byy, bw * pe / E, bh); }
+    text(ctx, 'Stored U = ' + si(E, 'J') + (compact ? '' : '   ·   kinetic ½mv² ' + fx(E ? 100 * ke / E : 0, 0) + ' %  ·  elastic ½k_s x² ' + fx(E ? 100 * pe / E : 0, 0) + ' %'), bx, byy - 5, { size: compact ? 10 : 10.5, mono: true, color: COL.muted });
+  }
+
+  // ------------------------------------------------------------ rotor stage
+  var ROTOR_DISPLAY = 0.1;
+  function rotorParticles(sim) {
+    var n = Math.round(40 + 0.35 * sim.power), arr = sim.particles || [];
+    while (arr.length < n) arr.push({ r: 0.2 + Math.random() * 0.77, th: Math.random() * TAU, s: 0.6 + Math.random() * 0.8 });
+    arr.length = n; sim.particles = arr; return arr;
+  }
+  function drawRotor(c, sim, compact, frameDt, running) {
+    var ctx = c.ctx, w = c.w, h = c.h, id = sim.id, W = sim.eng.y[0];
+    var cx = compact ? w * 0.5 : w * 0.42, R = Math.min(w * (compact ? 0.36 : 0.3), h * (compact ? 0.95 : 0.95));
+    var sq = 0.3, stackH = compact ? h * 0.26 : h * 0.24, nD = 9;
+    var yTop = h * (compact ? 0.42 : 0.4) - stackH / 2, yBot = yTop + stackH;
+    var dr = W * ROTOR_DISPLAY;
+    if (running) {
+      sim.theta += dr * frameDt;
+      var slip = (id.free - W) / id.free;
+      sim.flowPhase += (dr + 1.2 * slip + 0.3) * frameDt;
+    }
+    // shaft
+    ctx.strokeStyle = COL.shaft; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(cx, yTop - (compact ? 22 : 46)); ctx.lineTo(cx, yBot + (compact ? 16 : 30)); ctx.stroke();
+    // housing
+    ctx.strokeStyle = COL.line2; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.ellipse(cx, yBot + 6, R * 1.06, R * sq * 1.06, 0, 0, Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - R * 1.06, yTop - 6); ctx.lineTo(cx - R * 1.06, yBot + 6); ctx.moveTo(cx + R * 1.06, yTop - 6); ctx.lineTo(cx + R * 1.06, yBot + 6); ctx.stroke();
+    // discs, bottom to top
+    for (var k = nD - 1; k >= 0; k--) {
+      var yk = yTop + k * stackH / (nD - 1);
+      ctx.fillStyle = k === 0 ? COL.disc0 : (k % 2 ? COL.disc1 : COL.disc2);
+      ctx.strokeStyle = k === 0 ? COL.discLine0 : COL.discLine; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(cx, yk + 2.5, R, R * sq, 0, 0, Math.PI); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(cx, yk, R, R * sq, 0, 0, TAU); ctx.fill(); ctx.stroke();
+    }
+    // overlay (display only)
+    if (sim.overlay) {
+      ctx.save(); ctx.beginPath(); ctx.ellipse(cx, yTop, R, R * sq, 0, 0, TAU); ctx.clip();
+      ctx.translate(cx, yTop); ctx.scale(1, sq);
+      var g = ctx.createRadialGradient(0, 0, R * 0.12, 0, 0, R);
+      g.addColorStop(0, alpha(COL.stored, 0.30)); g.addColorStop(1, alpha(COL.input, 0.34));
+      ctx.fillStyle = g; ctx.fillRect(-R, -R, 2 * R, 2 * R); ctx.restore();
+    }
+    // disc rotation markers on top disc
+    ctx.save(); ctx.lineWidth = 1;
+    for (var m = 0; m < 8; m++) {
+      var a = sim.theta + m * TAU / 8, ca = Math.cos(a), sa = Math.sin(a);
+      ctx.strokeStyle = m === 0 ? alpha(COL.text, 0.8) : alpha(COL.steel, 0.35); ctx.lineWidth = m === 0 ? 1.6 : 1;
+      ctx.beginPath(); ctx.moveTo(cx + ca * R * 0.22, yTop + sa * R * 0.22 * sq); ctx.lineTo(cx + ca * R * 0.92, yTop + sa * R * 0.92 * sq); ctx.stroke();
+    }
+    ctx.restore();
+    // spiral guides
+    var inletA = 0.35;
+    ctx.lineWidth = 1;
+    for (var L = 0; L < 4; L++) {
+      ctx.strokeStyle = alpha(COL.stored, 0.22);
+      ctx.beginPath();
+      for (var q = 0; q <= 50; q++) {
+        var u = q / 50, ang = inletA + L * TAU / 4 + sim.flowPhase * 0.6 + u * Math.PI * 3.1, rr = 0.95 - u * 0.75;
+        var px = cx + Math.cos(ang) * R * rr, py = yTop + Math.sin(ang) * R * rr * sq;
+        if (q) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+      }
+      ctx.stroke();
+    }
+    // particles (illustrative; density scales with available flow power)
+    var parts = rotorParticles(sim), vr = 0.10 + 0.08 * Math.sqrt(sim.power / 100), slip2 = (id.free - W) / id.free;
+    var omegaFluid = dr + 1.1 * slip2 + 0.35;
+    ctx.fillStyle = alpha(COL.stored, 0.85);
+    for (var p = 0; p < parts.length; p++) {
+      var P = parts[p];
+      if (running) {
+        P.r -= vr * P.s * frameDt; P.th += omegaFluid * (1.2 / (P.r + 0.25)) * frameDt;
+        if (P.r < 0.17) { P.r = 0.95 + Math.random() * 0.03; P.th = inletA + (Math.random() - 0.5) * 0.5; }
+      }
+      var x = cx + Math.cos(P.th) * R * P.r, yy = yTop + Math.sin(P.th) * R * P.r * sq;
+      var tx = -Math.sin(P.th), ty = Math.cos(P.th) * sq, len = 3 + 4 * P.s;
+      ctx.strokeStyle = alpha(COL.stored, 0.35 + 0.5 * P.r);
+      ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x - tx * len, yy - ty * len); ctx.stroke();
+    }
+    // central exhaust hole
+    ctx.fillStyle = COL.hole; ctx.strokeStyle = COL.holeLine;
+    ctx.beginPath(); ctx.ellipse(cx, yTop, R * 0.15, R * 0.15 * sq, 0, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = COL.hub; ctx.beginPath(); ctx.arc(cx, yTop, 3, 0, TAU); ctx.fill();
+    // inlet nozzle + exhaust arrow
+    var nx = cx + Math.cos(inletA) * R * 1.02, ny = yTop + Math.sin(inletA) * R * sq * 1.02;
+    arrow(ctx, nx + (compact ? 26 : 44), ny + (compact ? 10 : 18), nx + 2, ny, COL.input, 2, 7);
+    arrow(ctx, cx + R * 0.32, yBot + (compact ? 8 : 14), cx + R * 0.32, yBot + (compact ? 26 : 44), alpha(COL.stored, 0.9), 1.6, 6);
+    if (!compact) {
+      text(ctx, 'RIM INLET', nx + 50, ny + 22, { size: 10, weight: 600, color: COL.input });
+      text(ctx, 'P_flow = ' + sim.power + ' W available', nx + 50, ny + 35, { size: 10, mono: true, color: COL.muted });
+      text(ctx, 'CENTRAL EXHAUST', cx + R * 0.32 + 8, yBot + 36, { size: 10, weight: 600, color: COL.stored });
+      text(ctx, 'disc rotation drawn at 1/10 of Ω · flow paths illustrative', 16, h - 14, { size: 10, color: COL.faint });
+      if (sim.overlay) text(ctx, 'Overlay: qualitative rim-to-centre pressure fall. Display only — not computed by the model.', 16, h - 28, { size: 10, color: COL.input });
+      var tau = id.torque(W);
+      var rx0 = w - 16;
+      text(ctx, 'Ω', rx0 - 150, 34, { size: 10.5, color: COL.muted });
+      text(ctx, fx(W, 2) + ' rad/s', rx0, 34, { align: 'right', size: 12, mono: true, color: COL.text });
+      text(ctx, fx(W * 60 / TAU, 0) + ' rpm', rx0, 50, { align: 'right', size: 10.5, mono: true, color: COL.faint });
+      text(ctx, 'τ_fluid', rx0 - 150, 72, { size: 10.5, color: COL.muted });
+      text(ctx, fx(tau, 3) + ' N·m', rx0, 72, { align: 'right', size: 12, mono: true, color: COL.stored });
+      text(ctx, 'P_load', rx0 - 150, 92, { size: 10.5, color: COL.muted });
+      text(ctx, fx(id.load * W * W, 2) + ' W', rx0, 92, { align: 'right', size: 12, mono: true, color: COL.load });
+      text(ctx, 'cap η·P', rx0 - 150, 112, { size: 10.5, color: COL.muted });
+      text(ctx, fx(id.capture * id.available, 1) + ' W', rx0, 112, { align: 'right', size: 12, mono: true, color: COL.input });
+    }
+  }
+
+  // ------------------------------------------------------------ charts per domain
+  function coilScope(c, sim) {
+    var a = sim.hist.a; if (a.length < 4) { plot(c, { x: [0, 6], y: [-1.1, 1.1], yTicks: [-1, 0, 1], xLabel: 'drive periods' }); return; }
+    var xs = [], u = [], i1 = [], i2 = [], m0 = 1e-30, m1 = 1e-30, m2 = 1e-30, k;
+    for (k = 0; k < a.length; k++) { m0 = Math.max(m0, Math.abs(a[k][0])); m1 = Math.max(m1, Math.abs(a[k][1])); m2 = Math.max(m2, Math.abs(a[k][2])); }
+    var off = 6 - a.length / 48;
+    for (k = 0; k < a.length; k++) { xs.push(off + k / 48); u.push(a[k][0] / m0); i1.push(a[k][1] / m1); i2.push(a[k][2] / m2); }
+    var series = [{ x: xs, y: i1, color: COL.input, width: 1.6 }, { x: xs, y: i2, color: COL.load, width: 1.6 }];
+    var legend = [{ color: COL.input, label: 'i₁  peak ' + si(m1, 'A') }, { color: COL.load, label: 'i₂  peak ' + si(m2, 'A') }];
+    if (!sim.id.lossless) { series.unshift({ x: xs, y: u, color: COL.faint, width: 1, dash: [3, 3] }); legend.unshift({ color: COL.faint, dash: [3, 3], label: 'u(t)  1 V drive' }); }
+    else { var q1 = [], q2 = [], n1 = 1e-30, n2 = 1e-30; for (k = 0; k < a.length; k++) { n1 = Math.max(n1, Math.abs(a[k][3])); n2 = Math.max(n2, Math.abs(a[k][4])); } for (k = 0; k < a.length; k++) { q1.push(a[k][3] / n1); q2.push(a[k][4] / n2); }
+      series = [{ x: xs, y: q1, color: COL.input, width: 1.6 }, { x: xs, y: q2, color: COL.stored, width: 1.6 }];
+      legend = [{ color: COL.input, label: 'q₁  peak ' + si(n1, 'C') }, { color: COL.stored, label: 'q₂  peak ' + si(n2, 'C') }]; }
+    plot(c, { x: [0, 6], y: [-1.15, 1.15], yTicks: [-1, 0, 1], xLabel: sim.id.lossless ? 'periods of ω₀ (last 6)' : 'drive periods (last 6)', xFmt: function (v) { return v.toFixed(0); },
+      yFmt: function (v) { return v.toFixed(0); }, series: series, legend: legend, legendRight: true });
+  }
+  function coilResp(c, sim) {
+    var cv = sim.responseCurve(), r0 = sim.id.omega0;
+    var m = sim.modes;
+    var vl = [{ x: m[0] / r0, color: COL.stored, label: 'ω₋', dash: [2, 3] }, { x: m[1] / r0, color: COL.stored, label: 'ω₊', dash: [2, 3] }];
+    if (!cv) {
+      plot(c, { x: [0.6, 1.6], y: [0, 1], yTicks: [], vlines: vl, xLabel: 'ω/ω₀' });
+      text(c.ctx, 'Lossless ringdown: no drive, so no driven response curve.', c.w / 2, c.h / 2, { align: 'center', size: 11, color: COL.faint });
+      return;
+    }
+    var lo = Infinity, hi = 0;
+    cv.pin.concat(cv.pload).forEach(function (v) { if (v > 0) { lo = Math.min(lo, v); hi = Math.max(hi, v); } });
+    var ylo = Math.pow(10, Math.floor(Math.log10(lo))), yhi = Math.pow(10, Math.ceil(Math.log10(hi)));
+    if (yhi / ylo < 100) ylo = yhi / 100;
+    vl.push({ x: sim.p.ratio, color: COL.input, dash: [], width: 1.2, label: 'drive', row: 1 });
+    var pts = [];
+    if (sim.last) { pts.push({ x: sim.p.ratio, y: sim.last.pin, color: COL.input, ring: true }); if (sim.last.pload > 0) pts.push({ x: sim.p.ratio, y: sim.last.pload, color: COL.load, ring: true }); }
+    plot(c, { x: [0.6, 1.6], y: [ylo, yhi], logY: true, y2: [0, 1], y2Ticks: [0, 0.5, 1], y2Fmt: function (v) { return v.toFixed(1); }, y2Label: 'η_load',
+      yFmt: function (v) { return si(v, 'W', 1); }, xLabel: 'ω/ω₀', xFmt: function (v) { return v.toFixed(1); }, vlines: vl,
+      series: [{ x: cv.xs, y: cv.pin, color: COL.input }, { x: cv.xs, y: cv.pload, color: COL.load }, { x: cv.xs, y: cv.eta, color: COL.muted, axis: 2, dash: [4, 3], width: 1.1 }],
+      points: pts, legend: [{ color: COL.input, label: 'P̄_in' }, { color: COL.load, label: 'P̄_load' }, { color: COL.muted, dash: [4, 3], label: 'η_load = P̄_load/P̄_in' }], legendRight: true });
+  }
+  function oscScope(c, sim) {
+    var a = sim.hist.a, xs = [], f = [], x = [], mf = 1e-30, mx = 1e-30, k;
+    for (k = 0; k < a.length; k++) { mf = Math.max(mf, Math.abs(a[k][0])); mx = Math.max(mx, Math.abs(a[k][1])); }
+    var off = 3 - a.length / 60;
+    for (k = 0; k < a.length; k++) { xs.push(off + k / 60); f.push(a[k][0] / mf); x.push(a[k][1] / mx); }
+    plot(c, { x: [0, 3], y: [-1.15, 1.15], yTicks: [-1, 0, 1], xLabel: 'drive periods (last 3)', xFmt: function (v) { return v.toFixed(0); }, yFmt: function (v) { return v.toFixed(0); },
+      series: [{ x: xs, y: f, color: COL.input }, { x: xs, y: x, color: COL.stored }],
+      legend: [{ color: COL.input, label: 'F(t)  F₀ = 0.1 N' }, { color: COL.stored, label: 'x(t)  peak ' + fx(mx * 1000, 3) + ' mm' }], legendRight: true });
+  }
+  var oscCurve = (function () { var xs = [], X = [], P = []; for (var r = 0.5; r <= 1.5001; r += 0.0025) { var w = r * 10; xs.push(r); X.push(T.MechanicalIdentity.amplitudeAt(w) * 1000); P.push(T.MechanicalIdentity.phaseAt(w)); } return { xs: xs, X: X, P: P }; })();
+  function oscResp(c, sim) {
+    var pts = [];
+    if (sim.meas) { pts.push({ x: sim.ratio, y: sim.meas.amp * 1000, color: COL.stored, ring: true }); pts.push({ x: sim.ratio, y: sim.meas.lag, axis: 2, color: COL.input, ring: true, r: 3.5 }); }
+    plot(c, { x: [0.5, 1.5], y: [0, 27], yTicks: [0, 5, 10, 15, 20, 25], y2: [0, Math.PI], y2Ticks: [0, Math.PI / 2, Math.PI], y2Fmt: function (v) { return v === 0 ? '0' : v < 2 ? 'π/2' : 'π'; },
+      yLabel: 'X (mm)', y2Label: 'lag (rad)', xLabel: 'ω/ω₀', xFmt: function (v) { return v.toFixed(1); },
+      vlines: [{ x: sim.ratio, color: COL.text, dash: [], width: 1 }],
+      series: [{ x: oscCurve.xs, y: oscCurve.X, color: COL.stored }, { x: oscCurve.xs, y: oscCurve.P, color: COL.input, axis: 2, dash: [4, 3], width: 1.2 }],
+      points: pts, legend: [{ color: COL.stored, label: 'X(ω) analytic' }, { color: COL.input, dash: [4, 3], label: 'φ_x lag analytic' }, { color: COL.muted, label: '○ measured, last period' }], legendRight: true });
+  }
+  function rotorCurve(c, sim) {
+    var id = sim.id, xs = [], tf = [], tl = [], pt = [], plo = [];
+    for (var W = 0; W <= 100.0001; W += 1) { xs.push(W); tf.push(id.torque(W)); tl.push((id.bearing + id.load) * W); pt.push(id.torque(W) * W); plo.push(id.load * W * W); }
+    var Wn = sim.eng.y[0], ws = id.steady(), cap = id.capture * id.available;
+    var tmax = Math.max(id.tau0, (id.bearing + id.load) * 100) * 1.08;
+    plot(c, { x: [0, 100], y: [0, id.tau0 * 1.12], y2: [0, id.available * 1.08], yLabel: 'torque (N·m)', y2Label: 'power (W)', xLabel: 'Ω (rad/s)',
+      yFmt: function (v) { return v >= 10 ? v.toFixed(0) : v.toFixed(1); }, y2Fmt: function (v) { return v.toFixed(0); },
+      hlines: [{ y: cap, axis: 2, color: COL.input, label: 'η_cap·P_flow = ' + fx(cap, 1) + ' W (cap)', dash: [5, 4] }, { y: id.available, axis: 2, color: COL.faint, label: 'P_flow available', dash: [1, 3] }],
+      vlines: [{ x: ws, color: alpha(COL.text, 0.5), dash: [2, 3], label: 'Ω_ss ' + fx(ws, 1), row: 2 }],
+      series: [{ x: xs, y: tf, color: COL.stored }, { x: xs, y: tl, color: COL.loss, width: 1.2 }, { x: xs, y: pt, color: COL.input, axis: 2, width: 1.3, dash: [4, 3] }, { x: xs, y: plo, color: COL.load, axis: 2, width: 1.3 }],
+      points: [{ x: Wn, y: id.torque(Wn), color: COL.stored }, { x: Wn, y: id.load * Wn * Wn, axis: 2, color: COL.load }, { x: Wn, y: id.torque(Wn) * Wn, axis: 2, color: COL.input, r: 3 }],
+      legend: [{ color: COL.stored, label: 'τ_fluid imposed' }, { color: COL.loss, label: '(b + l)·Ω bearing + load' }, { color: COL.input, dash: [4, 3], label: 'τ·Ω transferred' }, { color: COL.load, label: 'load power' }], legendRight: true });
+  }
+  function rotorHist(c, sim) {
+    var a = sim.hist.a, xs = [], W = [], P = [], wmax = sim.id.steady() * 1.25, pmax = sim.id.capture * sim.id.available * 0.9;
+    var t1 = Math.max(20, sim.elapsed), t0 = t1 - 20;
+    for (var k = 0; k < a.length; k++) { if (a[k][0] < t0) continue; xs.push(a[k][0]); W.push(a[k][1]); P.push(a[k][2]); wmax = Math.max(wmax, a[k][1] * 1.08); pmax = Math.max(pmax, a[k][2] * 1.08); }
+    plot(c, { x: [t0, t1], y: [0, wmax], y2: [0, pmax], yLabel: 'Ω (rad/s)', y2Label: 'P_load (W)', xLabel: 't (s)', xFmt: function (v) { return v.toFixed(0); },
+      yFmt: function (v) { return v.toFixed(0); }, y2Fmt: function (v) { return v.toFixed(0); },
+      hlines: [{ y: sim.id.steady(), color: alpha(COL.text, 0.45), label: 'Ω_ss = ' + fx(sim.id.steady(), 2) + ' rad/s', labelLeft: true }],
+      series: [{ x: xs, y: W, color: COL.stored }, { x: xs, y: P, color: COL.load, axis: 2, width: 1.3 }],
+      legend: [{ color: COL.stored, label: 'Ω(t)' }, { color: COL.load, label: 'P_load(t)' }], legendRight: true });
+  }
+
+  // ------------------------------------------------------------ ledger DOM
+  function Ledger(el, rows, foot) {
+    var html = '';
+    rows.forEach(function (r) {
+      html += '<div class="lrow' + (r.ref ? ' ref' : '') + '"><i class="sw ' + (r.sw || '') + '"' + (r.sw ? '' : ' style="background:transparent;border:1px solid #2d3c45"') + '></i><span class="lbl">' + r.label + (r.sub ? '<small>' + r.sub + '</small>' : '') + '</span><span class="val" data-k="' + r.key + '">—</span></div>';
+    });
+    html += '<div class="lbar" title="Shares of input work"><i class="b-st" style="background:var(--stored)"></i><i class="b-ls" style="background:var(--loss)"></i><i class="b-ld" style="background:var(--load)"></i></div>';
+    html += '<dl class="lfoot">';
+    foot.forEach(function (f) { html += '<dt>' + f.label + '</dt><dd data-k="' + f.key + '">—</dd>'; });
+    html += '</dl>';
+    el.innerHTML = html;
+    this.el = el; this.cache = {};
+    var self = this; el.querySelectorAll('[data-k]').forEach(function (n) { self.cache[n.getAttribute('data-k')] = n; });
+    this.bars = [el.querySelector('.b-st'), el.querySelector('.b-ls'), el.querySelector('.b-ld')];
+  }
+  Ledger.prototype.set = function (vals) { for (var k in vals) if (this.cache[k] && this.cache[k].innerHTML !== vals[k]) this.cache[k].innerHTML = vals[k]; };
+  Ledger.prototype.bar = function (win, st, ls, ld) {
+    var tot = Math.max(win, Math.max(st, 0) + ls + ld, 1e-300);
+    var f = [Math.max(st, 0) / tot, ls / tot, ld / tot];
+    for (var i = 0; i < 3; i++) this.bars[i].style.width = (100 * f[i]).toFixed(2) + '%';
+  };
+  function badge(ok, label) { return '<span class="badge ' + (ok ? 'ok' : 'bad') + '">' + label + '</span>'; }
+
+  var coilLedger = new Ledger($('coilLedger'), [
+    { key: 'in', sw: 'in', label: 'Input work W_in', sub: '∫ u·i₁ dt' },
+    { key: 'st', sw: 'st', label: 'Stored change ΔU', sub: 'U = ½qᵀKq + ½iᵀLi' },
+    { key: 'ls', sw: 'ls', label: 'Copper loss', sub: '∫ (R₁i₁² + R₂i₂²) dt' },
+    { key: 'ld', sw: 'ld', label: 'Load energy', sub: '∫ R_L i₂² dt' },
+    { key: 'rs', sw: 'rs', label: 'Balance residual', sub: 'ΔU − W_in + W_cu + W_load' }
+  ], [{ key: 'mx', label: 'max scaled |residual|' }, { key: 'pin', label: 'P̄_in, last period' }, { key: 'pld', label: 'P̄_load, last period' }, { key: 'eta', label: 'η_load = P̄_load / P̄_in' }]);
+  var oscLedger = new Ledger($('oscLedger'), [
+    { key: 'in', sw: 'in', label: 'Input work W_in', sub: '∫ F·v dt' },
+    { key: 'st', sw: 'st', label: 'Stored change ΔU', sub: 'U = ½mv² + ½k_s x²' },
+    { key: 'ls', sw: 'ls', label: 'Damping loss', sub: '∫ c_m v² dt' },
+    { key: 'ld', sw: '', label: 'Load energy', sub: 'no load in this model' },
+    { key: 'rs', sw: 'rs', label: 'Balance residual', sub: 'ΔU − W_in + W_damp' }
+  ], [{ key: 'mx', label: 'max scaled |residual|' }, { key: 'pin', label: 'P̄_in, last period' }, { key: 'pan', label: 'P̄_in analytic ½c_mω²X²' }]);
+  var rotorLedger = new Ledger($('rotorLedger'), [
+    { key: 'av', sw: '', ref: true, label: 'Available flow energy', sub: 'P_flow·t — reference, not rotor input' },
+    { key: 'in', sw: 'in', label: 'Rotor input W_rotor', sub: '∫ τ_fluid·Ω dt' },
+    { key: 'st', sw: 'st', label: 'Stored change ΔU', sub: 'U = ½J_rΩ²' },
+    { key: 'ls', sw: 'ls', label: 'Bearing loss', sub: '∫ b·Ω² dt' },
+    { key: 'ld', sw: 'ld', label: 'Load energy', sub: '∫ l·Ω² dt' },
+    { key: 'rs', sw: 'rs', label: 'Balance residual', sub: 'ΔU − W_rotor + W_b + W_load' },
+    { key: 'un', sw: '', ref: true, label: 'Unconverted flow energy', sub: 'P_flow·t − W_rotor' }
+  ], [{ key: 'mx', label: 'max |residual|' }, { key: 'eta', label: 'P_load / P_flow (instantaneous)' }, { key: 'mr', label: 'min unconverted energy' }]);
+
+  // ------------------------------------------------------------ text updates
+  function dl(pairs) { return pairs.map(function (p) { return p === '-' ? '<div class="sep"></div>' : '<dt>' + p[0] + '</dt><dd>' + p[1] + '</dd>'; }).join(''); }
+  function mdl(pairs) { return pairs.map(function (p) { return '<div><dt>' + p[0] + '</dt><dd>' + p[1] + '</dd></div>'; }).join(''); }
+  function setHTML(el, h) { if (el.__h !== h) { el.innerHTML = h; el.__h = h; } }
+
+  function updateCoilText() {
+    var s = coil, id = s.id, y = s.eng.y, E = id.energy(y), m = s.modes;
+    $('coilTimeTag').textContent = 't = ' + fx(s.elapsed * 1000, 2) + ' ms · segment ' + s.segment + (id.lossless ? ' · lossless' : '');
+    $('coilSegTag').textContent = 'since segment start';
+    var Q1 = id.omega0 * id.L1 / 0.5, w2 = 1 / Math.sqrt(id.L2 * id.C2), Q2 = w2 * id.L2 / (0.8 + 2), chi = id.kappa * id.kappa * Q1 * Q2;
+    setHTML($('coilModes'), dl([
+      ['ω₀ = 1/√(L₁C₁)', fx(id.omega0, 0) + ' rad/s <small>' + fx(id.omega0 / TAU / 1000, 3) + ' kHz</small>'],
+      ['ω₋', fx(m[0], 0) + ' rad/s <small>' + fx(m[0] / TAU / 1000, 3) + ' kHz</small>'],
+      ['ω₊', fx(m[1], 0) + ' rad/s <small>' + fx(m[1] / TAU / 1000, 3) + ' kHz</small>'],
+      ['ω₋/ω₀ · ω₊/ω₀', fx(m[0] / id.omega0, 4) + ' · ' + fx(m[1] / id.omega0, 4)],
+      '-',
+      ['analytic vs eig(L⁻¹K)', ex(s.modeErr, 2) + ' ' + badge(s.modeErr < 1e-12, '< 10⁻¹²')],
+      ['χ = κ²Q₁Q₂', fx(chi, 1) + ' <small>figure of merit, not η</small>']
+    ]));
+    var dU = E - s.E0;
+    if (id.lossless) {
+      coilLedger.set({ in: '0 J', st: si(dU, 'J'), ls: '0 J', ld: '0 J', rs: ex(s.res, 2) + ' J',
+        mx: 'drift ' + ex(s.maxDrift, 2) + ' ' + badge(s.maxDrift < 2e-5, '< 2×10⁻⁵'), pin: '—', pld: '—', eta: 'U₀ = ' + si(s.E0, 'J') });
+      coilLedger.bar(1, 1, 0, 0);
+    } else {
+      coilLedger.set({ in: si(y[4], 'J'), st: si(dU, 'J'), ls: si(y[5], 'J'), ld: si(y[6], 'J'), rs: ex(s.res, 2) + ' J',
+        mx: ex(s.maxScaled, 2) + ' ' + badge(s.maxScaled < 2e-5, '< 2×10⁻⁵'),
+        pin: s.last ? si(s.last.pin, 'W') : '—', pld: s.last ? si(s.last.pload, 'W') : '—',
+        eta: s.last && Number.isFinite(s.last.eta) ? fx(s.last.eta, 3) + ' <small>(window incl. storage change)</small>' : '—' });
+      coilLedger.bar(y[4], dU, y[5], y[6]);
+    }
+    $('coilKappaOut').textContent = fx(s.p.kappa, 2);
+    $('coilRatioOut').textContent = fx(s.p.ratio, 4) + ' · ' + fx(id.omega0 * s.p.ratio / TAU / 1000, 3) + ' kHz';
+    $('coilC2Out').textContent = fx(s.p.C2 * 1e6, 4) + ' µF';
+  }
+  function updateOscText() {
+    var s = osc, id = s.id, y = s.eng.y, E = id.energy(y), Xa = id.amplitude(), pa = id.phase();
+    $('oscTimeTag').textContent = 't = ' + fx(s.elapsed, 2) + ' s · segment ' + s.segment;
+    $('oscSegTag').textContent = 'since segment start';
+    var meas = s.meas, settled = meas && Math.abs(meas.amp - Xa) / Xa < 0.02;
+    setHTML($('oscRead'), dl([
+      ['ω₀ = √(k_s/m)', '10.000 rad/s <small>' + fx(10 / TAU, 4) + ' Hz</small>'],
+      ['ζ = c_m / 2√(m k_s)', '0.0200'],
+      ['drive ω', fx(id.omega, 3) + ' rad/s'],
+      '-',
+      ['X analytic', fx(Xa * 1000, 4) + ' mm'],
+      ['X live', meas ? fx(meas.amp * 1000, 4) + ' mm' : '—'],
+      ['lag φ_x analytic', fx(pa, 4) + ' rad <small>' + fx(pa * 180 / Math.PI, 1) + '°</small>'],
+      ['lag φ_x live', meas ? fx(meas.lag, 4) + ' rad <small>' + fx(meas.lag * 180 / Math.PI, 1) + '°</small>' : '—'],
+      ['state', meas ? (settled ? '<span class="badge ok">near steady state</span>' : '<span class="badge na">transient, τ = 5 s</span>') : '<span class="badge na">first period</span>']
+    ]));
+    var dU = E - s.E0;
+    oscLedger.set({ in: si(y[2], 'J'), st: si(dU, 'J'), ls: si(y[3], 'J'), ld: '—', rs: ex(s.res, 2) + ' J',
+      mx: ex(s.maxScaled, 2) + ' ' + badge(s.maxScaled < 2e-5, '< 2×10⁻⁵'),
+      pin: meas ? si(meas.pin, 'W') : '—', pan: si(id.avgPower(), 'W') });
+    oscLedger.bar(y[2], dU, y[3], 0);
+    $('oscRatioOut').textContent = fx(s.ratio, 3);
+  }
+  function updateRotorText() {
+    var s = rotor, id = s.id, y = s.eng.y, W = y[0], E = id.energy(y), t = s.eng.t;
+    $('rotorTimeTag').textContent = 't = ' + fx(s.elapsed, 2) + ' s · segment ' + s.segment;
+    $('rotorSegTag').textContent = 'since segment start';
+    var tau = id.torque(W);
+    setHTML($('rotorRead'), dl([
+      ['shaft speed Ω', fx(W, 3) + ' rad/s <small>' + fx(W * 60 / TAU, 0) + ' rpm</small>'],
+      ['steady Ω_ss (analytic)', fx(id.steady(), 3) + ' rad/s'],
+      ['τ₀ = 4η_cap P_flow / Ω_free', fx(id.tau0, 3) + ' N·m'],
+      ['τ_fluid(Ω)', fx(tau, 3) + ' N·m'],
+      '-',
+      ['transferred τ·Ω', fx(tau * W, 2) + ' W'],
+      ['bearing loss b·Ω²', fx(id.bearing * W * W, 2) + ' W'],
+      ['load power l·Ω²', fx(id.load * W * W, 2) + ' W'],
+      ['capture cap η_cap·P_flow', fx(id.capture * id.available, 1) + ' W']
+    ]));
+    var dU = E - s.E0;
+    rotorLedger.set({ av: si(id.available * t, 'J'), in: si(y[1], 'J'), st: si(dU, 'J'), ls: si(y[2], 'J'), ld: si(y[3], 'J'), rs: ex(s.res, 2) + ' J',
+      un: si(id.available * t - y[1], 'J'),
+      mx: ex(s.maxRes, 2) + ' J ' + badge(s.maxRes < 1e-5, '< 10⁻⁵ J'),
+      eta: fx(id.load * W * W / id.available, 3),
+      mr: (Number.isFinite(s.minRem) ? si(s.minRem, 'J') : '—') + ' ' + badge(!(s.minRem < -1e-8), '≥ −10⁻⁸ J') });
+    rotorLedger.bar(y[1], dU, y[2], y[3]);
+  }
+  function updateOverviewText() {
+    var c = coil, m = c.modes;
+    setHTML($('ovCoilMetrics'), mdl([
+      ['κ · drive ω/ω₀', fx(c.p.kappa, 2) + ' · ' + fx(c.p.ratio, 3)],
+      ['modes ω₋ · ω₊', fx(m[0] / TAU / 1000, 2) + ' · ' + fx(m[1] / TAU / 1000, 2) + ' <small>kHz</small>'],
+      ['P̄_load (last period)', c.id.lossless ? '— <small>lossless</small>' : (c.last ? si(c.last.pload, 'W') : '—')],
+      [c.id.lossless ? 'energy drift' : 'η_load (last period)', c.id.lossless ? ex(c.maxDrift, 1) : (c.last && Number.isFinite(c.last.eta) ? fx(c.last.eta, 3) : '—')]
+    ]));
+    var o = osc, me = o.meas;
+    setHTML($('ovOscMetrics'), mdl([
+      ['X live · analytic', (me ? fx(me.amp * 1000, 2) : '—') + ' · ' + fx(o.id.amplitude() * 1000, 2) + ' <small>mm</small>'],
+      ['lag live · analytic', (me ? fx(me.lag, 3) : '—') + ' · ' + fx(o.id.phase(), 3) + ' <small>rad</small>'],
+      ['drive ω/ω₀', fx(o.ratio, 3)],
+      ['max scaled residual', ex(o.maxScaled, 1)]
+    ]));
+    var r = rotor, W = r.eng.y[0];
+    setHTML($('ovRotorMetrics'), mdl([
+      ['shaft speed Ω', fx(W, 2) + ' <small>rad/s</small>'],
+      ['τ_fluid', fx(r.id.torque(W), 3) + ' <small>N·m</small>'],
+      ['load power', fx(r.id.load * W * W, 2) + ' <small>W</small>'],
+      ['P_load / P_flow', fx(r.id.load * W * W / r.id.available, 3) + ' <small>of ' + r.power + ' W</small>']
+    ]));
+  }
+
+
+  // ======================================================================
+  // VISUAL MODES — display transforms only. They read simulation state; they never write it.
+  // ======================================================================
+  function negHex(h) { var n = parseInt(h.slice(1), 16); return '#' + (0xffffff - n).toString(16).padStart(6, '0'); }
+  var PALETTES = {
+    standard: PALETTE_STD,
+    reflections: PALETTE_STD,
+    inverted: (function () { var o = {}; for (var k in PALETTE_STD) o[k] = negHex(PALETTE_STD[k]); return o; })(),
+    absence: { input: '#e8b45a', stored: '#7fd0e0', loss: '#e8876d', load: '#9bd08f', resid: '#c9d2d8', text: '#e6edf0', muted: '#a3b1b9',
+      faint: '#66757e', line: '#182126', line2: '#25323a', bg: '#040506', copper: '#d6a46a', steel: '#a7b3b8', wire: '#56656e', barBg: '#0a0e10',
+      hatch: '#1a2429', massFill: '#040506', massLine: '#7d909a', shaft: '#c9a050', disc0: '#040506', disc1: '#040506', disc2: '#040506',
+      discLine0: '#8a9ba4', discLine: '#34444d', hole: '#040506', holeLine: '#55666f', hub: '#e0b860', legendBg: '#040506' }
+  };
+  var MODE = 'standard';
+  var MODE_TEXT = {
+    standard: 'Standard — dossier engineering view.',
+    inverted: 'Inverted — photographic-negative palette; each stage carries a circle-inversion lens p′ = c + r²(p − c)/|p − c|² that folds the whole instrument inside-out. Move the pointer over a stage to steer it.',
+    reflections: 'Infinite reflections — the live geometry recurses through mirror pairs R = diag(−1, 1) (‖Rv‖ = ‖v‖, RᵀR = I). Depth scaling sᵏ is perspective only. Labels are never mirrored.',
+    absence: 'Absence of pic pixels — no bitmaps or textures: the live geometry is resampled as a sparse point field over construction lines and void.'
+  };
+  function setMode(m) {
+    if (!PALETTES[m]) m = 'standard';
+    MODE = m; Object.assign(COL, PALETTES[m]);
+    document.body.setAttribute('data-mode', m);
+    var mc = $('modeCaption'); if (mc) { mc.textContent = MODE_TEXT[m]; mc.hidden = m === 'standard'; }
+    document.querySelectorAll('#modeSeg button').forEach(function (b) { var on = b.dataset.v === m; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
+    try { localStorage.setItem('tsa-mode', m); } catch (e) { }
+    coil.curve = null;
+  }
+
+  var OFF = {};
+  function offFor(key, cv, read) {
+    var k = key + (read ? ':r' : ''), o = OFF[k];
+    if (!o) { o = OFF[k] = { c: document.createElement('canvas') }; o.ctx = o.c.getContext('2d', read ? { willReadFrequently: true } : undefined); }
+    if (o.c.width !== cv.width || o.c.height !== cv.height) { o.c.width = cv.width; o.c.height = cv.height; }
+    var dpr = cv.width / cv.clientWidth;
+    o.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); o.ctx.clearRect(0, 0, cv.clientWidth, cv.clientHeight);
+    return o;
+  }
+  function replay(ctx, q) { var keep = TEXTQ; TEXTQ = null; for (var i = 0; i < q.length; i++) text(ctx, q[i][0], q[i][1], q[i][2], q[i][3]); TEXTQ = keep; }
+  var LENS = {};
+  function renderStage(key, drawFn) {
+    var cv = C[key], c = prep(cv); if (!c) return;
+    if (MODE === 'standard') { drawFn(c); return; }
+    var q;
+    if (MODE === 'inverted') { TEXTQ = []; drawFn(c); q = TEXTQ; TEXTQ = null; inversionLens(c, cv, key); replay(c.ctx, q); return; }
+    var o = offFor(key, cv, MODE === 'absence');
+    TEXTQ = []; drawFn({ ctx: o.ctx, w: c.w, h: c.h }); q = TEXTQ; TEXTQ = null;
+    if (MODE === 'reflections') mirrorHall(c, o.c); else pointField(c, o, key);
+    replay(c.ctx, q);
+  }
+  // Circle inversion of the rendered stage inside a lens (pixel remap, display only).
+  function inversionLens(c, cv, key) {
+    var ctx = c.ctx, dpr = cv.width / c.w, W = cv.width, H = cv.height;
+    var L = LENS[key] || (LENS[key] = { x: c.w * 0.2, y: c.h * 0.62, set: false });
+    if (!L.set) { L.x = c.w * 0.2; L.y = c.h * 0.5; }
+    var r = Math.min(c.w, c.h) * 0.24, R = Math.round(r * dpr), cxp = Math.round(L.x * dpr), cyp = Math.round(L.y * dpr);
+    var bx = Math.max(0, cxp - R), by = Math.max(0, cyp - R), bw = Math.min(W, cxp + R) - bx, bh = Math.min(H, cyp + R) - by;
+    if (bw <= 0 || bh <= 0) return;
+    var src = ctx.getImageData(0, 0, W, H).data, out = ctx.createImageData(bw, bh), od = out.data, R2 = R * R;
+    var bgn = parseInt(COL.bg.slice(1), 16), br = bgn >> 16 & 255, bgc = bgn >> 8 & 255, bb = bgn & 255;
+    for (var yy = 0; yy < bh; yy++) {
+      var py = by + yy - cyp;
+      for (var xx = 0; xx < bw; xx++) {
+        var px = bx + xx - cxp, d2 = px * px + py * py, o = (yy * bw + xx) * 4;
+        if (d2 >= R2) { var s0 = ((by + yy) * W + bx + xx) * 4; od[o] = src[s0]; od[o + 1] = src[s0 + 1]; od[o + 2] = src[s0 + 2]; od[o + 3] = src[s0 + 3]; continue; }
+        var k = R2 / Math.max(d2, 1), sx = Math.round(cxp + px * k), sy = Math.round(cyp + py * k);
+        if (sx >= 0 && sy >= 0 && sx < W && sy < H) { var si2 = (sy * W + sx) * 4; od[o] = src[si2]; od[o + 1] = src[si2 + 1]; od[o + 2] = src[si2 + 2]; od[o + 3] = Math.max(src[si2 + 3], 200); if (src[si2 + 3] < 8) { od[o] = br; od[o + 1] = bgc; od[o + 2] = bb; } }
+        else { od[o] = br; od[o + 1] = bgc; od[o + 2] = bb; od[o + 3] = 255; }
+      }
+    }
+    ctx.putImageData(out, bx, by);
+    ctx.save(); ctx.strokeStyle = alpha(COL.text, 0.55); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(L.x, L.y, r, 0, TAU); ctx.stroke();
+    ctx.setLineDash([2, 4]); ctx.strokeStyle = alpha(COL.text, 0.3); ctx.beginPath(); ctx.arc(L.x, L.y, r * 1.06, 0, TAU); ctx.stroke(); ctx.restore();
+    if (c.h > 260) text(ctx, 'circle-inversion lens · r = ' + r.toFixed(0) + ' px', L.x, L.y - r - 7, { align: 'center', size: 10, color: COL.muted });
+  }
+  // Recursive mirror corridor: each layer is reflected (det = -1) and receded by s^k.
+  function mirrorHall(c, img) {
+    var ctx = c.ctx, w = c.w, h = c.h, K = 7, s = 0.8;
+    ctx.save();
+    for (var k = K; k >= 1; k--) {
+      var sc = Math.pow(s, k), flip = k % 2 ? -1 : 1;
+      ctx.save(); ctx.translate(w / 2, h / 2); ctx.scale(flip * sc, sc); ctx.translate(-w / 2, -h / 2);
+      ctx.globalAlpha = 0.46 * Math.pow(0.66, k - 1);
+      ctx.drawImage(img, 0, 0, w, h);
+      ctx.globalAlpha = 0.5 * Math.pow(0.8, k); ctx.strokeStyle = COL.line2; ctx.lineWidth = 1 / sc;
+      ctx.strokeRect(1, 1, w - 2, h - 2);
+      ctx.restore();
+    }
+    // frame-corner sight lines toward the vanishing point
+    ctx.globalAlpha = 0.35; ctx.strokeStyle = COL.line2; ctx.lineWidth = 1; ctx.beginPath();
+    var sK = Math.pow(s, K), ix = w / 2 * (1 - sK), iy = h / 2 * (1 - sK);
+    ctx.moveTo(0, 0); ctx.lineTo(ix, iy); ctx.moveTo(w, 0); ctx.lineTo(w - ix, iy); ctx.moveTo(0, h); ctx.lineTo(ix, h - iy); ctx.moveTo(w, h); ctx.lineTo(w - ix, h - iy); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.drawImage(img, 0, 0, w, h);
+    ctx.restore();
+  }
+  // Point-field resampling of the rendered geometry over construction lines (no bitmaps, no textures).
+  function pointField(c, o, key) {
+    var ctx = c.ctx, w = c.w, h = c.h, cv = o.c, dpr = cv.width / w;
+    // construction lines: perspective floor + sparse lattice
+    ctx.save(); ctx.strokeStyle = alpha(COL.stored, 0.08); ctx.lineWidth = 1; ctx.beginPath();
+    var vx = w / 2, vy = h * 0.3;
+    for (var i = -10; i <= 10; i++) { ctx.moveTo(vx, vy); ctx.lineTo(vx + i * w * 0.12, h); }
+    for (var j = 1; j <= 7; j++) { var yy = vy + (h - vy) * Math.pow(j / 7, 1.8); ctx.moveTo(0, yy); ctx.lineTo(w, yy); }
+    ctx.stroke(); ctx.restore();
+    var g = 4, d = o.ctx.getImageData(0, 0, cv.width, cv.height).data, W = cv.width, H = cv.height;
+    var offs = [[0, 0], [2, 0], [0, 2], [2, 2], [1, 1]];
+    for (var y = 1; y < h - 1; y += g) {
+      for (var x = 1; x < w - 1; x += g) {
+        var best = 0, bi = -1;
+        for (var k = 0; k < offs.length; k++) {
+          var px = Math.round((x + offs[k][0]) * dpr), py = Math.round((y + offs[k][1]) * dpr);
+          if (px >= W || py >= H) continue;
+          var ii = (py * W + px) * 4, a = d[ii + 3] / 255, m = Math.max(d[ii], d[ii + 1], d[ii + 2]) / 255 * a;
+          if (m > best) { best = m; bi = ii; }
+        }
+        if (best < 0.17) continue;
+        var rr = 0.55 + 1.25 * best;
+        ctx.fillStyle = 'rgba(' + d[bi] + ',' + d[bi + 1] + ',' + d[bi + 2] + ',' + Math.min(1, 0.35 + best).toFixed(2) + ')';
+        ctx.fillRect(x + 1 - rr / 2, y + 1 - rr / 2, rr, rr);
+      }
+    }
+    ctx.globalAlpha = 0.14; ctx.drawImage(cv, 0, 0, w, h); ctx.globalAlpha = 1;
+  }
+
+  // ------------------------------------------------------------ 17-mode field + drift displays
+  var FIELD = (function () {
+    var xs = [], f = [], m = 0;
+    for (var i = 0; i <= 200; i++) { var L = i / 200, v = 0; for (var j = 0; j < 17; j++) v += UP.W[j] * Math.cos(TAU * (j + 1) * L); xs.push(L); f.push(v); m = Math.max(m, Math.abs(v)); }
+    var s1 = 0, s2 = 0; UP.W.forEach(function (v) { s1 += v; s2 += v * v; });
+    return { xs: xs, f: f, max: m, sum: s1, norm2: Math.sqrt(s2) };
+  })();
+  function fieldAt(L) { var v = 0; for (var j = 0; j < 17; j++) v += UP.W[j] * Math.cos(TAU * (j + 1) * L); return v; }
+  function drawFieldBars(c, compact, scan) {
+    var ctx = c.ctx, w = c.w, h = c.h, n = 17, pl = compact ? 6 : 8, pr = 6, top = compact ? 16 : 18, base = h - (compact ? 16 : 20), bw = (w - pl - pr) / n;
+    var mx = 1.5;
+    ctx.strokeStyle = COL.line; ctx.lineWidth = 1; ctx.beginPath();
+    [0.5, 1, 1.5].forEach(function (v) { var y = Math.round(base - v / mx * (base - top)) + 0.5; ctx.moveTo(pl, y); ctx.lineTo(w - pr, y); }); ctx.stroke();
+    if (!compact) [0.5, 1, 1.5].forEach(function (v) { text(ctx, v.toFixed(1), w - pr, base - v / mx * (base - top) - 3, { align: 'right', size: 9, mono: true, color: COL.faint }); });
+    var hot = scan === undefined ? -1 : Math.floor(((scan % 1) + 1) % 1 * 17);
+    for (var j = 0; j < n; j++) {
+      var v = UP.W[j], x = pl + j * bw + bw * 0.18, ww = bw * 0.64, y = base - v / mx * (base - top);
+      ctx.fillStyle = alpha(j === hot ? COL.input : COL.stored, MODE === 'absence' ? 0.0 : 0.22 + 0.5 * v / 1.44);
+      ctx.fillRect(x, y, ww, base - y);
+      ctx.strokeStyle = alpha(j === hot ? COL.input : COL.stored, 0.9); ctx.lineWidth = 1;
+      ctx.strokeRect(x + 0.5, y + 0.5, ww - 1, base - y - 1);
+      if (!compact || j % 2 === 0 || true) text(ctx, String(j + 1), x + ww / 2, base + 11, { align: 'center', size: compact ? 8.5 : 9, mono: true, color: j === hot ? COL.input : COL.faint });
+    }
+    text(ctx, compact ? 'wⱼ, j = 1…17' : 'weight wⱼ for mode Fⱼ (supplied CSV)', pl, top - 6, { size: 10, color: COL.faint });
+  }
+  function drawFieldCurve(c, scan) {
+    var pts = [{ x: scan % 1, y: fieldAt(scan % 1), color: COL.input }];
+    plot(c, { x: [0, 1], y: [-FIELD.max * 1.1, FIELD.max * 1.1], xLabel: 'L (framework coordinate)', yFmt: function (v) { return v.toFixed(1); }, xFmt: function (v) { return v.toFixed(1); },
+      series: [{ x: FIELD.xs, y: FIELD.f, color: COL.stored, width: 1.4 }], points: pts, vlines: [{ x: scan % 1, color: alpha(COL.input, 0.7), dash: [2, 3] }],
+      legend: [{ color: COL.stored, label: 'f(L) = Σ wⱼ cos(2πjL) · display basis' }], legendRight: true });
+  }
+  function drawDriftSpark(c) {
+    var sims = [[coil, COL.input, 'coil'], [osc, COL.stored, 'oscillator'], [rotor, COL.load, 'rotor']];
+    var series = [], legend = [];
+    sims.forEach(function (s) {
+      var a = s[0].drift.hist.a, xs = [], ys = [];
+      for (var i = 0; i < a.length; i++) { xs.push(90 - a.length + i); ys.push(clamp(a[i], 1e-13, 10)); }
+      series.push({ x: xs, y: ys, color: s[1], width: 1.4 }); legend.push({ color: s[1], label: s[2] + '  D = ' + (Number.isFinite(s[0].drift.D) ? ex(s[0].drift.D, 1) : '—') });
+    });
+    plot(c, { x: [0, 90], y: [1e-12, 10], logY: true, yTicks: [1e-12, 1e-9, 1e-6, 1e-3, 1], yFmt: function (v) { return '10' + sup(Math.round(Math.log10(v))); },
+      xLabel: 'stroboscopic samples (last 90)', xTicks: [], series: series, legend: legend, legendRight: true });
+  }
+  // Invariant-geometry check for the mirror/rotation transforms used by the display.
+  function invariantCheck(theta) {
+    var v = [coil.eng.y[2] / coil.Ir1 || 0, osc.eng.y[0] / (osc.Xa || 1)];
+    if (!(Math.hypot(v[0], v[1]) > 0)) v = [1, 0];
+    var c0 = Math.cos(theta), s0 = Math.sin(theta);
+    var Rr = [[c0, -s0], [s0, c0]], n = [Math.cos(theta / 2), Math.sin(theta / 2)];
+    var Rf = [[1 - 2 * n[0] * n[0], -2 * n[0] * n[1]], [-2 * n[0] * n[1], 1 - 2 * n[1] * n[1]]];
+    function chk(R) {
+      var rv = [R[0][0] * v[0] + R[0][1] * v[1], R[1][0] * v[0] + R[1][1] * v[1]];
+      var dl = Math.abs(Math.hypot(rv[0], rv[1]) - Math.hypot(v[0], v[1]));
+      var m = 0; for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) { var s = R[0][i] * R[0][j] + R[1][i] * R[1][j] - (i === j ? 1 : 0); m = Math.max(m, Math.abs(s)); }
+      return { dl: dl, orth: m, det: R[0][0] * R[1][1] - R[0][1] * R[1][0] };
+    }
+    return { rot: chk(Rr), ref: chk(Rf), v: v };
+  }
+
+  // ------------------------------------------------------------ engine space (procedural 3-D architecture)
+  var ENG = { yaw: -0.5, pitch: 0.34, dist: 31, auto: true, drag: null, rtheta: 0, flow: 0, lmax: 1e-12, scan: 0 };
+  function helix(cx, cz, r, y0, y1, turns, seg, axis) {
+    var pts = [], n = turns * seg;
+    for (var i = 0; i <= n; i++) { var u = i / n, a = u * turns * TAU, yy = y0 + (y1 - y0) * u;
+      if (axis === 'x') pts.push([yy, cx + Math.cos(a) * r, cz + Math.sin(a) * r]); else pts.push([cx + Math.cos(a) * r, yy, cz + Math.sin(a) * r]); }
+    return pts;
+  }
+  function circleXZ(cx, y, cz, r, n, a0) { var p = []; for (var i = 0; i <= n; i++) { var a = (a0 || 0) + i / n * TAU; p.push([cx + Math.cos(a) * r, y, cz + Math.sin(a) * r]); } return p; }
+  function boxEdges(x0, x1, y0, y1, z0, z1) {
+    var v = [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1], [x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]];
+    return [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]].map(function (e) { return [v[e[0]], v[e[1]]]; });
+  }
+  function engineScene(dt) {
+    var Ls = [], Pt = [], Lb = [];
+    function line(pts, col, a, wd, dash) { Ls.push({ p: pts, c: col, a: a, w: wd || 1, d: dash }); }
+    // floor grid
+    for (var gx = -10; gx <= 10; gx++) line([[gx, 0, -6], [gx, 0, 6]], COL.line2, gx % 5 === 0 ? 0.7 : 0.35);
+    for (var gz = -6; gz <= 6; gz++) line([[-10, 0, gz], [10, 0, gz]], COL.line2, gz % 3 === 0 ? 0.7 : 0.35);
+    // BOX
+    boxEdges(-9.5, 9.5, 0, 5.4, -5.6, 5.6).forEach(function (e) { line(e, COL.faint, 0.6, 1, [4, 6]); });
+    Lb.push({ p: [9.5, 5.4, 5.6], t: 'BOX · admissible domain', c: COL.faint });
+    // STATE lattice N = 56 and CLOCK sweep
+    var totalSteps = coil.eng.k + osc.eng.k + rotor.eng.k;
+    var k56 = Math.floor(totalSteps / 240) % UP.N;
+    for (var i = 0; i < 8; i++) for (var j = 0; j < 7; j++) {
+      var idx = i * 7 + j, p = [-7 + 2 * i, 0.02, -3 + j];
+      if (idx === k56) { Pt.push({ p: p, c: COL.input, r: 3.2, a: 1 }); line([p, [p[0], 0.9, p[2]]], COL.input, 0.8, 1.4); Lb.push({ p: [p[0], 1.0, p[2]], t: 'CLOCK k = ' + k56 + ' / 56', c: COL.input }); }
+      else Pt.push({ p: p, c: COL.stored, r: 1.6, a: 0.55 });
+    }
+    Lb.push({ p: [-7.6, 0, 3.6], t: 'STATE · lattice N = 56 · L₀ = 0, t₀ = 0', c: COL.muted });
+    // 17-mode pylons on the back wall + field curve
+    ENG.scan = (ENG.scan + (paused ? 0 : dt * 0.04)) % 1;
+    var hot = Math.floor(ENG.scan * 17);
+    for (var m = 0; m < 17; m++) {
+      var x = -8 + m, hgt = UP.W[m] * 2.6, zc = -5.5, col = m === hot ? COL.input : COL.stored, aa = 0.4 + 0.5 * UP.W[m] / 1.44;
+      line([[x - 0.18, 0, zc], [x - 0.18, hgt, zc], [x + 0.18, hgt, zc], [x + 0.18, 0, zc]], col, aa, 1.2);
+      line([[x - 0.18, hgt, zc], [x - 0.18, hgt, zc + 0.36], [x + 0.18, hgt, zc + 0.36], [x + 0.18, hgt, zc]], col, aa * 0.6, 1);
+      Lb.push({ p: [x, -0.35, zc], t: 'F' + (m + 1), c: m === hot ? COL.input : COL.faint, small: true });
+    }
+    var fp = []; for (var q = 0; q <= 160; q++) { var L = q / 160; fp.push([-8 + 16 * L, 4.5 + 0.55 * fieldAt(L) / FIELD.max, -5.5]); }
+    line(fp, COL.stored, 0.85, 1.4);
+    var sxp = -8 + 16 * ENG.scan; line([[sxp, 0, -5.5], [sxp, 5.2, -5.5]], COL.input, 0.35, 1, [2, 4]);
+    Lb.push({ p: [-8, 5.25, -5.5], t: 'f(L) = Σ wⱼFⱼ(L) · 17-mode transformation field', c: COL.stored });
+    // chambers
+    var ch = [[-8.6, -3.4, 'I · COUPLED RLC'], [-2.6, 2.6, 'II · MECHANICAL OSCILLATOR'], [3.4, 8.6, 'III · FLUID ROTOR']];
+    ch.forEach(function (cc) { boxEdges(cc[0], cc[1], 0, 3.4, -2.2, 2.2).forEach(function (e) { line(e, COL.muted, 0.42); }); Lb.push({ p: [cc[0], 3.62, 2.2], t: cc[2], c: COL.text }); });
+    // coil chamber — live currents and flux
+    var cid = coil.id, y = coil.eng.y, in1 = y[2] / coil.imax, in2 = y[3] / coil.imax;
+    var lam1 = cid.L1 * y[2] + cid.M * y[3], lam2 = cid.M * y[2] + cid.L2 * y[3];
+    ENG.lmax = Math.max(Math.abs(lam1), Math.abs(lam2), ENG.lmax * 0.995, 1e-12);
+    line(helix(-7.1, 0, 0.62, 0.5, 2.3, 6, 22), COL.copper, 0.35 + 0.65 * Math.abs(in1), 1.4);
+    line(helix(-4.9, 0, 0.42, 0.3, 2.9, 12, 18), COL.copper, 0.35 + 0.65 * Math.abs(in2), 1.4);
+    line(circleXZ(-7.1, 2.55, 0, 0.5, 28), COL.input, 0.3 + 0.6 * Math.min(1, Math.abs(y[0] / cid.C1) / coil.qmax), 1.4);
+    line(circleXZ(-4.9, 3.1, 0, 0.55, 28), COL.input, 0.3 + 0.6 * Math.min(1, Math.abs(y[1] / cid.C2) / coil.qmax), 1.4);
+    var nf = Math.round(coil.p.kappa * 7), lns = (Math.abs(lam1) + Math.abs(lam2)) / (2 * ENG.lmax);
+    for (var f = 0; f < nf; f++) { var e = []; for (var u = 0; u <= 40; u++) { var a = u / 40 * TAU; e.push([-6 + Math.cos(a) * 1.1, 1.6 + Math.sin(a) * (0.95 + 0.14 * f), 0]); } line(e, COL.stored, 0.1 + 0.5 * lns, 1, [4, 4]); }
+    Lb.push({ p: [-8.4, 0.2, 2.2], t: 'i₁ ' + si(y[2], 'A') + ' · i₂ ' + si(y[3], 'A') + ' · κ ' + fx(coil.p.kappa, 2), c: COL.muted, small: true });
+    // oscillator chamber — live displacement (scaled ×48 units per metre)
+    var xo = osc.eng.y[0], sc = 48, mx = 0.4 + xo * sc, F = osc.id.forceAt(osc.eng.t) / osc.id.force;
+    line([[-2.3, 0.1, -0.9], [-2.3, 2.1, -0.9], [-2.3, 2.1, 0.9], [-2.3, 0.1, 0.9], [-2.3, 0.1, -0.9]], COL.steel, 0.6);
+    var sp = helix(0, 0, 0.22, -2.3, mx - 0.4, 10, 14, 'x').map(function (p) { return [p[0], p[1] + 1.0, p[2]]; });
+    line(sp, COL.steel, 0.8, 1.2);
+    boxEdges(mx - 0.4, mx + 0.4, 0.6, 1.4, -0.4, 0.4).forEach(function (e2) { line(e2, COL.stored, 0.9, 1.3); });
+    var Xa = osc.id.amplitude();
+    [0.4 - Xa * sc, 0.4 + Xa * sc].forEach(function (xx) { line([[xx, 0.01, -1.2], [xx, 0.01, 1.2]], COL.stored, 0.5, 1, [3, 4]); });
+    if (Math.abs(F) > 0.05) { var ax = mx + F * 1.0; line([[mx, 1.75, 0], [ax, 1.75, 0]], COL.input, 0.95, 1.8); line([[ax - 0.18 * Math.sign(F), 1.86, 0], [ax, 1.75, 0], [ax - 0.18 * Math.sign(F), 1.64, 0]], COL.input, 0.95, 1.8); }
+    Lb.push({ p: [-2.4, 0.2, 2.2], t: 'x ' + fx(xo * 1000, 2) + ' mm · X(ω) ' + fx(Xa * 1000, 2) + ' mm', c: COL.muted, small: true });
+    // rotor chamber — live shaft speed (rotation drawn at 1/10)
+    var W = rotor.eng.y[0];
+    if (!paused) { ENG.rtheta += W * 0.1 * dt; ENG.flow += (W * 0.1 + 0.8 * (1 - W / 100) + 0.3) * dt; }
+    for (var dk = 0; dk < 8; dk++) line(circleXZ(6, 0.5 + dk * 0.2, 0, 1.75, 56), dk === 7 ? COL.discLine0 : COL.discLine, dk === 7 ? 0.95 : 0.55, 1);
+    for (var mk = 0; mk < 6; mk++) { var ang = ENG.rtheta + mk * TAU / 6; line([[6 + Math.cos(ang) * 0.35, 1.9, Math.sin(ang) * 0.35], [6 + Math.cos(ang) * 1.65, 1.9, Math.sin(ang) * 1.65]], mk === 0 ? COL.text : COL.steel, mk === 0 ? 0.9 : 0.4, mk === 0 ? 1.5 : 1); }
+    for (var sp2 = 0; sp2 < 3; sp2++) { var spi = []; for (var u2 = 0; u2 <= 40; u2++) { var uu = u2 / 40, a2 = ENG.flow * 0.6 + sp2 * TAU / 3 + uu * Math.PI * 3, r2 = 1.6 - uu * 1.25; spi.push([6 + Math.cos(a2) * r2, 1.92, Math.sin(a2) * r2]); } line(spi, COL.stored, 0.45, 1); }
+    line([[6, 0.1, 0], [6, 3.0, 0]], COL.shaft, 0.9, 2.2);
+    line([[8.6, 1.2, 1.1], [7.7, 1.2, 0.9]], COL.input, 0.9, 2);
+    Lb.push({ p: [3.6, 0.2, 2.2], t: 'Ω ' + fx(W, 2) + ' rad/s · P_flow ' + rotor.power + ' W · η_cap cap ' + fx(0.65 * rotor.power, 1) + ' W', c: COL.muted, small: true });
+    Lb.push({ p: [8.6, 1.45, 1.1], t: 'rim inlet', c: COL.input, small: true });
+    Lb.push({ p: [-9.5, 5.4, 5.6], t: 'ENGINE · one RK4Engine, three identities', c: COL.faint });
+    return { L: Ls, P: Pt, T: Lb };
+  }
+  function drawEngine(c, dt) {
+    var ctx = c.ctx, w = c.w, h = c.h;
+    if (!paused && ENG.auto && !ENG.drag) ENG.yaw += dt * 0.045;
+    var cyw = Math.cos(ENG.yaw), syw = Math.sin(ENG.yaw), cp = Math.cos(ENG.pitch), spp = Math.sin(ENG.pitch);
+    var foc = Math.min(w * 1.15, h * 2.1), cx = w / 2, cyS = h * 0.5, D = ENG.dist;
+    function P(p) { var x = p[0], yy = p[1] - 1.9, z = p[2]; var xr = x * cyw - z * syw, zr = x * syw + z * cyw; var y2 = yy * cp - zr * spp, z2 = yy * spp + zr * cp + D; return [cx + foc * xr / z2, cyS - foc * y2 / z2, z2]; }
+    function fog(z) { var t = (z - (D - 12)) / 24; return MODE === 'inverted' ? clamp(0.4 + t * 0.9, 0.3, 1) : clamp(1.25 - t, 0.22, 1); }
+    var sc = engineScene(dt);
+    var copies = [[function (p) { return p; }, 1]];
+    if (MODE === 'reflections') {
+      copies = [[function (p) { return [p[0] + 38, p[1], p[2]]; }, 0.1], [function (p) { return [p[0] - 38, p[1], p[2]]; }, 0.1],
+        [function (p) { return [19 - p[0], p[1], p[2]]; }, 0.36], [function (p) { return [-19 - p[0], p[1], p[2]]; }, 0.36],
+        [function (p) { return [p[0], -p[1], p[2]]; }, 0.24], [function (p) { return p; }, 1]];
+    }
+    var abs = MODE === 'absence';
+    copies.forEach(function (cp2) {
+      var xf = cp2[0], am = cp2[1];
+      sc.L.forEach(function (l) {
+        var pp = l.p.map(function (p) { return P(xf(p)); });
+        var zA = 0; pp.forEach(function (q) { zA += q[2]; }); zA /= pp.length;
+        if (zA < 1) return;
+        var a = l.a * am * fog(zA);
+        ctx.strokeStyle = alpha(l.c, abs ? a * 0.28 : a); ctx.lineWidth = l.w; ctx.setLineDash(l.d || []);
+        ctx.beginPath(); for (var i = 0; i < pp.length; i++) { if (i) ctx.lineTo(pp[i][0], pp[i][1]); else ctx.moveTo(pp[i][0], pp[i][1]); } ctx.stroke();
+        if (abs) { ctx.fillStyle = alpha(l.c, Math.min(1, a * 1.1)); var stp = Math.max(1, Math.floor(pp.length / 40)); for (var k = 0; k < pp.length; k += stp) ctx.fillRect(pp[k][0] - 0.9, pp[k][1] - 0.9, 1.8, 1.8); }
+      });
+      ctx.setLineDash([]);
+      sc.P.forEach(function (pt) { var q = P(xf(pt.p)); if (q[2] < 1) return; ctx.fillStyle = alpha(pt.c, pt.a * am * fog(q[2])); var r = pt.r * 14 / q[2] * 1.4; ctx.fillRect(q[0] - r / 2, q[1] - r / 2, r, r); });
+    });
+    sc.T.forEach(function (t) { var q = P(t.p); if (q[2] < 1) return; text(ctx, t.t, q[0] + 4, q[1] - 4, { size: t.small ? 9.5 : 10.5, mono: !!t.small, color: t.c, weight: t.small ? 400 : 600 }); });
+    text(ctx, 'drag to orbit · double-click to toggle auto-orbit · procedural vector geometry only', 14, h - 12, { size: 10, color: COL.faint });
+    if (MODE === 'reflections') text(ctx, 'mirror walls at x = ±9.5 and floor y = 0 · images to second order', w - 14, h - 12, { align: 'right', size: 10, color: COL.faint });
+  }
+
+  // ------------------------------------------------------------ verification view
+  var REF = window.TSA_REFERENCE || null;
+  var verifyResult = null, verifyRunning = false, verifyAuto = false;
+  function refFind(list, key, val) { if (!REF) return null; for (var i = 0; i < REF[list].length; i++) if (REF[list][i][key] === val) return REF[list][i]; return null; }
+  function st(ok) { return ok === undefined ? '<span class="badge na">—</span>' : badge(ok, ok ? 'PASS' : 'FAIL'); }
+  function renderVerify() {
+    var R = verifyResult, h = '';
+    var names = { uncoupled: 'Uncoupled', matched_k02: 'Matched, κ = 0.2', matched_k05: 'Matched, κ = 0.5', lower_split_drive: 'Lower split-mode drive', detuned_secondary: 'Detuned secondary C₂' };
+    var cfg = [['uncoupled', 0, 1], ['matched_k02', 0.2, 1], ['matched_k05', 0.5, 1], ['lower_split_drive', 0.5, 1 / Math.sqrt(1.5)], ['detuned_secondary', 0.2, 1]];
+    h += '<article class="card"><header class="card-head"><h3>Coupled RLC — driven cases (80 periods × 240 RK4 steps) and lossless ringdown (20 × 300)</h3></header><div class="vt-wrap"><table class="vt"><thead><tr>' +
+      '<th>Scenario</th><th>κ / ω÷ω₀</th><th>ω₋, ω₊ (rad/s)</th><th>Mode rel. error</th><th>W_in (J)</th><th>Copper (J)</th><th>Load (J)</th><th>Max scaled balance · browser</th><th>· Python</th><th>Gate</th><th>Status</th></tr></thead><tbody>';
+    cfg.forEach(function (c) {
+      var b = R && R.rlc.filter(function (x) { return x.scenario === c[0]; })[0], p = refFind('rlc', 'scenario', c[0]);
+      var md = b ? b.mode_frequencies_rad_s : (p ? p.mode_frequencies_rad_s : null);
+      h += '<tr><td>' + names[c[0]] + '</td><td>' + fx(c[1], 2) + ' / ' + fx(c[2], 6) + '</td><td>' + (md ? fx(md[0], 1) + ', ' + fx(md[1], 1) : '—') + '</td><td>' + (b ? ex(b.mode_relative_error, 2) : p ? ex(p.mode_relative_error, 2) : '—') +
+        '</td><td>' + (b ? b.input_energy_j.toExponential(4) : '—') + '</td><td>' + (b ? b.copper_loss_j.toExponential(4) : '—') + '</td><td>' + (b ? b.load_energy_j.toExponential(4) : '—') +
+        '</td><td>' + (b ? ex(b.max_scaled_balance_error, 4) : '—') + '</td><td>' + (p ? ex(p.max_scaled_balance_error, 4) : '—') + '</td><td>&lt; 2×10⁻⁵</td><td>' + st(b ? b.pass : undefined) + '</td></tr>';
+    });
+    var bl = R && R.lossless, pl = refFind('rlc', 'scenario', 'lossless_ringdown');
+    h += '<tr><td>Lossless ringdown (κ 0.2)</td><td>0.20 / —</td><td></td><td></td><td>0</td><td>0</td><td>0</td><td>drift ' + (bl ? ex(bl.maximum_relative_energy_drift, 4) : '—') + '</td><td>' + (pl ? ex(pl.maximum_relative_energy_drift, 4) : '—') + '</td><td>&lt; 2×10⁻⁵</td><td>' + st(bl ? bl.pass : undefined) + '</td></tr>';
+    h += '</tbody></table></div><p class="fine">Mode frequencies are two computations of the same declared model (analytic root with the 2(1−κ²) denominator vs eigenvalues of L⁻¹K), not measured coil resonances. Max mode error · browser ' + (R ? ex(R.maximum_mode_relative_error, 3) : '—') + ' · Python ' + (REF ? ex(REF.maximum_mode_relative_error, 3) : '—') + '. Invalid κ = −0.1 and κ = 1 rejected: browser ' + (R ? R.invalid_coupling_rejections + ' of 2' : '—') + ', Python ' + (REF ? REF.invalid_coupling_rejections + ' of 2' : '—') + '.</p></article>';
+
+    h += '<article class="card"><header class="card-head"><h3>Mechanical oscillator — 80 periods × 240 RK4 steps per ratio</h3></header><div class="vt-wrap"><table class="vt"><thead><tr><th>Drive ratio</th><th>Steady amplitude X (m)</th><th>Displacement lag (rad)</th><th>Max scaled balance · browser</th><th>· Python</th><th>Gate</th><th>Status</th></tr></thead><tbody>';
+    [0.5, 0.9, 1, 1.1, 1.5].forEach(function (r) {
+      var b = R && R.mechanical.filter(function (x) { return x.drive_ratio === r; })[0], p = refFind('mechanical', 'drive_ratio', r);
+      var I = new T.MechanicalIdentity(r);
+      h += '<tr><td>' + fx(r, 1) + '</td><td>' + fx(I.amplitude(), 8) + '</td><td>' + fx(I.phase(), 8) + '</td><td>' + (b ? ex(b.max_scaled_balance_error, 4) : '—') + '</td><td>' + (p ? ex(p.max_scaled_balance_error, 4) : '—') + '</td><td>&lt; 2×10⁻⁵</td><td>' + st(b ? b.pass : undefined) + '</td></tr>';
+    });
+    h += '</tbody></table></div><p class="fine">Amplitude and lag use the analytic steady formula (as in the dossier); balance errors refer to the numerical trajectory. At ω = ω₀ the displacement lags the force by π/2 = 1.5708 rad.</p></article>';
+
+    h += '<article class="card"><header class="card-head"><h3>Fluid rotor — 10 s at Δt = 0.005 s, imposed torque curve</h3></header><div class="vt-wrap"><table class="vt"><thead><tr><th>P_flow (W)</th><th>Final Ω (rad/s)</th><th>Steady Ω (rad/s)</th><th>Load / available (J)</th><th>Bearing (J)</th><th>Max |balance| · browser (J)</th><th>· Python (J)</th><th>Min unconverted (J)</th><th>Status</th></tr></thead><tbody>';
+    [50, 100, 200, 500].forEach(function (P) {
+      var b = R && R.rotor.filter(function (x) { return x.available_flow_power_w === P; })[0], p = refFind('rotor', 'available_flow_power_w', P);
+      var src = b || p;
+      h += '<tr><td>' + P.toFixed(1) + '</td><td>' + (src ? fx(src.final_speed_rad_s, 6) : '—') + '</td><td>' + (src ? fx(src.steady_speed_rad_s, 6) : '—') + '</td><td>' + (src ? fx(src.load_energy_j, 6) + ' / ' + fx(src.available_energy_j, 6) : '—') +
+        '</td><td>' + (src ? fx(src.bearing_loss_j, 4) : '—') + '</td><td>' + (b ? ex(b.max_balance_error_j, 4) : '—') + '</td><td>' + (p ? ex(p.max_balance_error_j, 4) : '—') + '</td><td>' + (src ? fx(src.minimum_unconverted_energy_j, 4) : '—') + '</td><td>' + st(b ? b.pass : undefined) + '</td></tr>';
+    });
+    h += '</tbody></table></div><p class="fine">Available fluid energy and unconverted flow energy are not counted as rotor input. Load energy is always well below available energy; the transferred-power maximum is η_cap·P_flow by construction. Not CFD or measured turbine performance.</p></article>';
+    $('verifyTables').innerHTML = h;
+    if (REF) $('pyRefInfo').innerHTML = 'Python reference: <b>' + REF.status + '</b> · Python ' + REF.python + ' · NumPy ' + REF.numpy + ' · values match dossier Appendix B (Python 3.12.8 / NumPy 1.26.4). Full report: <span class="mono">tesla_results/tesla_validation_report.json</span>';
+  }
+  function runVerify() {
+    if (verifyRunning) return;
+    verifyRunning = true; $('btnVerify').disabled = true; $('verifyStatus').textContent = 'Running official checks…';
+    T.runChecks(function (p) { $('verifyBar').style.width = (100 * p).toFixed(1) + '%'; }, function (res) {
+      verifyRunning = false; verifyResult = res; $('btnVerify').disabled = false; $('btnVerify').textContent = 'Run checks again';
+      $('verifyBar').style.width = '100%';
+      $('verifyStatus').innerHTML = 'Browser result: <b class="' + (res.passed ? 'pass' : 'fail') + '">' + res.status + '</b> · ' + (5 * 19200 + 6000 + 5 * 19200 + 8000).toLocaleString() + ' RK4 steps in ' + fx(res.elapsed_ms / 1000, 2) + ' s · declared numerical checks only';
+      renderVerify();
+    });
+  }
+
+  // ------------------------------------------------------------ UI wiring
+  var view = 'overview', paused = false;
+  function show(v) {
+    view = v;
+    document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.view === v)); });
+    document.querySelectorAll('.view').forEach(function (s) { s.classList.toggle('active', s.id === 'view-' + v); });
+    if (v === 'verify' && !verifyAuto) { verifyAuto = true; runVerify(); }
+    if (history.replaceState) history.replaceState(null, '', '#' + v);
+  }
+  document.querySelectorAll('.tab').forEach(function (t) { t.addEventListener('click', function () { show(t.dataset.view); }); });
+  document.querySelectorAll('[data-goto]').forEach(function (el) { el.addEventListener('click', function (e) { e.stopPropagation(); show(el.dataset.goto); window.scrollTo({ top: 0 }); }); });
+  function setPaused(p) { paused = p; $('btnPause').textContent = p ? 'Resume' : 'Pause'; $('runState').classList.toggle('paused', p); $('runState').lastElementChild.textContent = p ? 'Paused' : 'Running'; }
+  $('btnPause').addEventListener('click', function () { setPaused(!paused); });
+  $('btnReset').addEventListener('click', function () { coil.reset(); osc.reset(); rotor.reset(); syncControls(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.code === 'Space' && !/INPUT|BUTTON|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); setPaused(!paused); }
+  });
+  function segOn(el, val) { el.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', (b.dataset.v || b.dataset.p) === String(val)); }); }
+
+  var PRESETS = {
+    uncoupled: { kappa: 0, ratio: 1, C2: 0.25e-6, lossless: false },
+    matched_k02: { kappa: 0.2, ratio: 1, C2: 0.25e-6, lossless: false },
+    matched_k05: { kappa: 0.5, ratio: 1, C2: 0.25e-6, lossless: false },
+    lower_split_drive: { kappa: 0.5, ratio: 1 / Math.sqrt(1.5), C2: 0.25e-6, lossless: false },
+    detuned_secondary: { kappa: 0.2, ratio: 1, C2: 0.3025e-6, lossless: false },
+    lossless_ringdown: { kappa: 0.2, ratio: 1, C2: 0.25e-6, lossless: true }
+  };
+  function syncControls() {
+    $('coilKappa').value = coil.p.kappa; $('coilRatio').value = coil.p.ratio; $('coilC2').value = coil.p.C2 * 1e6; $('coilLossless').checked = coil.p.lossless;
+    $('coilRatio').disabled = coil.p.lossless;
+    segOn($('coilPresets'), coil.preset); segOn($('coilRate'), coil.rate);
+    var tk = $('coilRatioTicks'), m = coil.modes, w0 = coil.id.omega0, html = '';
+    [['ω₋', m[0] / w0], ['ω₊', m[1] / w0]].forEach(function (t) { if (t[1] >= 0.6 && t[1] <= 1.6) html += '<span style="left:' + ((t[1] - 0.6) / 1.0 * 100).toFixed(2) + '%">' + t[0] + '</span>'; });
+    tk.innerHTML = html;
+    $('oscRatio').value = osc.ratio; segOn($('oscPresets'), [0.5, 0.9, 1, 1.1, 1.5].indexOf(osc.ratio) >= 0 && osc.presetActive ? osc.ratio : null); segOn($('oscRate'), osc.rate);
+    segOn($('rotorPower'), rotor.power); segOn($('rotorRate'), rotor.rate); $('rotorOverlay').checked = rotor.overlay;
+  }
+  document.querySelectorAll('#coilPresets button').forEach(function (b) {
+    b.addEventListener('click', function () { var p = PRESETS[b.dataset.p]; coil.p = Object.assign({}, p); coil.preset = b.dataset.p; coil.reset(); syncControls(); });
+  });
+  $('coilKappa').addEventListener('input', function (e) { coil.p.kappa = +e.target.value; coil.preset = null; coil.build(true); syncControls(); });
+  $('coilRatio').addEventListener('input', function (e) { coil.p.ratio = +e.target.value; coil.preset = null; coil.build(true); syncControls(); });
+  $('coilC2').addEventListener('input', function (e) { coil.p.C2 = +e.target.value * 1e-6; coil.preset = null; coil.build(true); syncControls(); });
+  $('coilLossless').addEventListener('change', function (e) { coil.p.lossless = e.target.checked; coil.preset = null; coil.reset(); syncControls(); });
+  document.querySelectorAll('#coilRate button').forEach(function (b) { b.addEventListener('click', function () { coil.rate = +b.dataset.v; syncControls(); }); });
+  document.querySelectorAll('#oscPresets button').forEach(function (b) { b.addEventListener('click', function () { osc.ratio = +b.dataset.v; osc.presetActive = true; osc.reset(); syncControls(); }); });
+  $('oscRatio').addEventListener('input', function (e) { osc.ratio = +e.target.value; osc.presetActive = false; osc.build(true); syncControls(); });
+  document.querySelectorAll('#oscRate button').forEach(function (b) { b.addEventListener('click', function () { osc.rate = +b.dataset.v; syncControls(); }); });
+  document.querySelectorAll('#rotorPower button').forEach(function (b) { b.addEventListener('click', function () { rotor.power = +b.dataset.v; rotor.build(true); syncControls(); }); });
+  document.querySelectorAll('#rotorRate button').forEach(function (b) { b.addEventListener('click', function () { rotor.rate = +b.dataset.v; syncControls(); }); });
+  $('rotorOverlay').addEventListener('change', function (e) { rotor.overlay = e.target.checked; });
+  $('rotorRestart').addEventListener('click', function () { rotor.reset(); });
+  $('btnVerify').addEventListener('click', runVerify);
+
+  osc.presetActive = true;
+  syncControls(); renderVerify();
+  var initial = (location.hash || '').slice(1);
+  if (['overview', 'coil', 'osc', 'rotor', 'verify', 'engine'].indexOf(initial) >= 0) show(initial);
+
+  // ------------------------------------------------------------ visual-mode wiring
+  var MODES = ['standard', 'inverted', 'reflections', 'absence'];
+  document.querySelectorAll('#modeSeg button').forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.v); }); });
+  document.addEventListener('keydown', function (e) {
+    if ((e.key === 'm' || e.key === 'M') && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && !e.ctrlKey && !e.metaKey) setMode(MODES[(MODES.indexOf(MODE) + 1) % MODES.length]);
+  });
+  var qm = (location.search.match(/[?&]mode=([a-z]+)/) || [])[1], stored = null;
+  try { stored = localStorage.getItem('tsa-mode'); } catch (e) { }
+  setMode(qm || stored || 'standard');
+  ['ovCoil', 'ovOsc', 'ovRotor', 'coilStage', 'oscStage', 'rotorStage'].forEach(function (k) {
+    var el = $(k);
+    el.addEventListener('pointermove', function (e) { if (MODE !== 'inverted') return; var r = el.getBoundingClientRect(); LENS[k] = { x: e.clientX - r.left, y: e.clientY - r.top, set: true }; });
+  });
+  (function () {
+    var el = $('engineStage');
+    el.addEventListener('pointerdown', function (e) { ENG.drag = { x: e.clientX, y: e.clientY, yaw: ENG.yaw, pitch: ENG.pitch }; el.setPointerCapture(e.pointerId); });
+    el.addEventListener('pointermove', function (e) { if (!ENG.drag) return; ENG.yaw = ENG.drag.yaw + (e.clientX - ENG.drag.x) * 0.006; ENG.pitch = clamp(ENG.drag.pitch + (e.clientY - ENG.drag.y) * 0.004, 0.08, 1.1); });
+    el.addEventListener('pointerup', function () { ENG.drag = null; });
+    el.addEventListener('dblclick', function () { ENG.auto = !ENG.auto; });
+    el.addEventListener('wheel', function (e) { e.preventDefault(); ENG.dist = clamp(ENG.dist + e.deltaY * 0.01, 18, 48); }, { passive: false });
+  })();
+  $('wList').innerHTML = UP.W.map(function (v, j) { return '<span><b>F' + sub(j + 1) + '</b>' + v.toFixed(6) + '</span>'; }).join('');
+  function sub(n) { var m = { 0: '₀', 1: '₁', 2: '₂', 3: '₃', 4: '₄', 5: '₅', 6: '₆', 7: '₇', 8: '₈', 9: '₉' }; return String(n).split('').map(function (c) { return m[c]; }).join(''); }
+  $('ovWstats').textContent = fx(FIELD.sum, 4) + ' · ' + fx(FIELD.norm2, 4);
+  function driftRow(name, s, note) {
+    var D = s.drift.D, ok = Number.isFinite(D);
+    return [name, (ok ? ex(D, 2) : '—') + ' <small>' + note + '</small>'];
+  }
+  function updateUPText() {
+    setHTML($('ovDrift'), dl([driftRow('Coil', coil, 'per drive period'), driftRow('Oscillator', osc, 'per drive period'), driftRow('Rotor', rotor, 'per 0.25 s'), '-', ['Λ_G + ε', '6.8169 + 10⁻¹²']]));
+  }
+  function updateEngineText() {
+    var tot = coil.eng.k + osc.eng.k + rotor.eng.k;
+    $('engineTag').textContent = 'CLOCK k = ' + (Math.floor(tot / 240) % 56) + ' / 56 · ' + tot.toLocaleString() + ' RK4 steps this segment set';
+    setHTML($('fivePrinciples'), dl([
+      ['STATE · Territory', 'q,i + 3 ledgers (7) · x,v + 2 (4) · Ω + 3 (4)'],
+      ['CLOCK · Regime', 'Δt = T/240 · T/240 · 5 ms'],
+      ['BOX · Border', 'admissible · ' + (coil.error || osc.error || rotor.error ? '<span class="badge bad">rejected</span>' : '<span class="badge ok">0 rejected</span>')],
+      ['LEFTOVER · Tax', ex(coil.id.lossless ? coil.maxDrift : coil.maxScaled, 1) + ' · ' + ex(osc.maxScaled, 1) + ' · ' + ex(rotor.maxRes, 1) + ' J'],
+      ['ENGINE · Empire', 'one RK4Engine, three identities']
+    ]));
+    var iv = invariantCheck(ENG.yaw);
+    setHTML($('invariants'), dl([
+      ['rotation |‖Rv‖ − ‖v‖|', ex(iv.rot.dl, 2)],
+      ['rotation max|RᵀR − I|', ex(iv.rot.orth, 2) + ' <small>det ' + fx(iv.rot.det, 12) + '</small>'],
+      ['reflection |‖Rv‖ − ‖v‖|', ex(iv.ref.dl, 2)],
+      ['reflection max|RᵀR − I|', ex(iv.ref.orth, 2) + ' <small>det ' + fx(iv.ref.det, 12) + '</small>'],
+      ['θ (camera yaw)', fx(((ENG.yaw % TAU) + TAU) % TAU, 4) + ' rad']
+    ]));
+  }
+
+  // ------------------------------------------------------------ main loop
+  var C = {}; ['ovCoil', 'ovOsc', 'ovRotor', 'ovField', 'coilStage', 'coilScope', 'coilResp', 'oscStage', 'oscScope', 'oscResp', 'rotorStage', 'rotorCurve', 'rotorHist', 'engineStage', 'engineCurve', 'engineDrift', 'engineBars'].forEach(function (k) { C[k] = $(k); });
+  function safe(sim, dt, name) {
+    try { sim.advance(dt); } catch (err) { sim.error = err.message; setPaused(true); console.error(name, err); }
+  }
+  var last = performance.now(), textTimer = 0;
+  function frame(now) {
+    var dt = Math.min((now - last) / 1000, 0.05); last = now;
+    if (!paused) { safe(coil, dt, 'coil'); safe(osc, dt, 'oscillator'); safe(rotor, dt, 'rotor'); }
+    var fdt = paused ? 0 : dt, c;
+    if (view === 'overview') {
+      renderStage('ovCoil', function (c) { drawCoil(c, coil, true, fdt); });
+      renderStage('ovOsc', function (c) { drawOsc(c, osc, true); });
+      renderStage('ovRotor', function (c) { drawRotor(c, rotor, true, fdt, !paused); });
+      if ((c = prep(C.ovField))) drawFieldBars(c, true, ENG.scan);
+      if (!paused) ENG.scan = (ENG.scan + dt * 0.04) % 1;
+    } else if (view === 'coil') {
+      renderStage('coilStage', function (c) { drawCoil(c, coil, false, fdt); });
+      if ((c = prep(C.coilScope))) coilScope(c, coil);
+      if ((c = prep(C.coilResp))) coilResp(c, coil);
+    } else if (view === 'osc') {
+      renderStage('oscStage', function (c) { drawOsc(c, osc, false); });
+      if ((c = prep(C.oscScope))) oscScope(c, osc);
+      if ((c = prep(C.oscResp))) oscResp(c, osc);
+    } else if (view === 'rotor') {
+      renderStage('rotorStage', function (c) { drawRotor(c, rotor, false, fdt, !paused); });
+      if ((c = prep(C.rotorCurve))) rotorCurve(c, rotor);
+      if ((c = prep(C.rotorHist))) rotorHist(c, rotor);
+    } else if (view === 'engine') {
+      if ((c = prep(C.engineStage))) drawEngine(c, dt);
+      if ((c = prep(C.engineCurve))) drawFieldCurve(c, ENG.scan);
+      if ((c = prep(C.engineDrift))) drawDriftSpark(c);
+      if ((c = prep(C.engineBars))) drawFieldBars(c, false, ENG.scan);
+    }
+    textTimer += dt;
+    if (textTimer > 0.1) {
+      textTimer = 0;
+      if (view === 'overview') { updateOverviewText(); updateUPText(); }
+      else if (view === 'engine') updateEngineText();
+      else if (view === 'coil') updateCoilText();
+      else if (view === 'osc') updateOscText();
+      else if (view === 'rotor') updateRotorText();
+    }
+    requestAnimationFrame(frame);
+  }
+  updateOverviewText(); updateCoilText(); updateOscText(); updateRotorText();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
